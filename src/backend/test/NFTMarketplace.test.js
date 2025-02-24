@@ -1,6 +1,8 @@
 // test smart contract bằng Hardhat + Chai để kiểm tra việc triển khai NFT Marketplace.
-
 const { expect } = require("chai");
+
+const toWei = (num) => ethers.utils.parseEther(num.toString()) // 1 Ether = 10¹⁸ Wei
+const fromWei = (num) => ethers.utils.formatEther(num) // Chuyển đổi từ Wei sang Ether
 
 describe("NFTMarketplace", function () {
   // describe() nhóm tất cả các test case liên quan đến NFTMarketplace
@@ -10,8 +12,7 @@ describe("NFTMarketplace", function () {
   let addr1; //  Hai tài khoản người dùng để test
   let addr2;
   let feePercent = 1; // Phí giao dịch (1%)
-  let URI = "sample URI" // siêu dữ liệu (metadata) chứa thông tin về NFT
-
+  let URI = "sample URI"; // siêu dữ liệu (metadata) chứa thông tin về NFT
 
   beforeEach(async function () {
     // Lấy contract factory từ ethers
@@ -39,20 +40,57 @@ describe("NFTMarketplace", function () {
       expect(await marketplace.feePercent()).to.equal(feePercent); //  Phần trăm phí giao dịch mà marketplace thu.
     });
 
-    describe("Minting NFTs", function () { // kiểm thử "Minting NFTs"
+      // kiểm thử "Minting NFTs"
+    describe("Minting NFTs", function () {
+      it("Should track each minted NFT", async function () {
+        // addr1 mints an nft
+        await nft.connect(addr1).mint(URI); // addr1 gọi hàm mint(URI) trên smart contract NFT và tạo một NFT mới với URI "sample URI"
+        expect(await nft.tokenCount()).to.equal(1); //  đã mint một NFT
+        expect(await nft.balanceOf(addr1.address)).to.equal(1); // addr1 sở hữu 1 NFT
+        expect(await nft.tokenURI(1)).to.equal(URI); // tokenURI(1) của NFT thứ nhất phải là "sample URI".
+        // addr2 mints an nft
+        await nft.connect(addr2).mint(URI);
+        expect(await nft.tokenCount()).to.equal(2); //  có hai NFT đã được mint
+        expect(await nft.balanceOf(addr2.address)).to.equal(1);
+        expect(await nft.tokenURI(2)).to.equal(URI);
+      });
+    });
 
-        it("Should track each minted NFT", async function () {
-          // addr1 mints an nft
-          await nft.connect(addr1).mint(URI) // addr1 gọi hàm mint(URI) trên smart contract NFT và tạo một NFT mới với URI "sample URI"
-          expect(await nft.tokenCount()).to.equal(1); //  đã mint một NFT
-          expect(await nft.balanceOf(addr1.address)).to.equal(1); // addr1 sở hữu 1 NFT
-          expect(await nft.tokenURI(1)).to.equal(URI); // tokenURI(1) của NFT thứ nhất phải là "sample URI".
-          // addr2 mints an nft
-          await nft.connect(addr2).mint(URI)
-          expect(await nft.tokenCount()).to.equal(2); //  có hai NFT đã được mint
-          expect(await nft.balanceOf(addr2.address)).to.equal(1);
-          expect(await nft.tokenURI(2)).to.equal(URI);
-        });
-      })
+    describe("Making marketplace items", function () {
+      let price = 1;
+      let result;
+      beforeEach(async function () {
+        // addr1 tạo 1 nft
+        await nft.connect(addr1).mint(URI);
+        // addr1 cấp quyền cho marketplace thao tác NFT của họ
+        await nft.connect(addr1).setApprovalForAll(marketplace.address, true);
+      });
+
+      it("Should track newly created item, transfer NFT from seller to marketplace and emit Offered event", async function () {
+        // Addr1 niêm yết NFT có tokenId = 1 với giá 1 ETH (toWei(price)).
+        await expect(
+          marketplace.connect(addr1).makeItem(nft.address, 1, toWei(price))
+        )
+          .to.emit(marketplace, "Offered")
+          .withArgs(1, nft.address, 1, toWei(price), addr1.address); //  Kiểm tra sự kiện có được phát ra với đúng tham số hay không.
+        // Kiểm tra chủ sở hữu của NFT sau khi niêm yết phải là marketplace
+        expect(await nft.ownerOf(1)).to.equal(marketplace.address);
+        // itemCount phải tăng lên 1 vì một item đã được niêm yết
+        expect(await marketplace.itemCount()).to.equal(1);
+        // Kiểm tra dữ liệu item trong items mapping
+        const item = await marketplace.items(1);
+        expect(item.itemId).to.equal(1);
+        expect(item.nft).to.equal(nft.address);
+        expect(item.tokenId).to.equal(1);
+        expect(item.price).to.equal(toWei(price));
+        expect(item.sold).to.equal(false);
+      });
+
+      it("Should fail if price is set to zero", async function () { // Kiểm tra lỗi khi giá là 0
+        await expect(
+          marketplace.connect(addr1).makeItem(nft.address, 1, 0)
+        ).to.be.revertedWith("Price must be greater than zero");// in ra lỗi "Price must be greater than zero"
+      });
+    });
   });
 });
