@@ -6,10 +6,13 @@ async function main() {
   console.log("Account balance:", (await deployer.getBalance()).toString()); //  số dư tài khoản
 
   // deploy contracts here:
+  const NFT = await ethers.getContractFactory("NFT"); // 	lấy một bản mẫu (factory) của hợp đồng "NFT" từ file Solidity.
+  const nft = await NFT.deploy(); // Triển khai hợp đồng lên blockchain
   
-  
+  console.log("NFT contrac address:", nft.address); // Địa chỉ hợp đồng
+
   // For each contract, pass the deployed contract and name to this function to save a copy of the contract ABI and address to the front end.
-  saveFrontendFiles(); // Lưu trữ địa chỉ và ABI của smart contract để frontend sử dụng.
+  saveFrontendFiles(nft , "NFT"); // Lưu trữ địa chỉ và ABI của smart contract để frontend sử dụng.
 }
 
 function saveFrontendFiles(contract, name) { // Lưu trữ thông tin hợp đồng
