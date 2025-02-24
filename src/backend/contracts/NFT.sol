@@ -3,9 +3,7 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
-contract NFT is
-    ERC721URIStorage // Tạo một NFT chuẩn ERC721 có khả năng lưu trữ tokenURI.
-{
+contract NFT is ERC721URIStorage { // Tạo một NFT chuẩn ERC721 có khả năng lưu trữ tokenURI.
     uint public tokenCount; // Lưu trữ tổng số NFT đã được tạo.
 
     constructor() ERC721("DApp NFT", "DAPP") {} //  DApp NFT → Tên của bộ sưu tập NFT, DAPP → Mã token (symbol) của NFT.
