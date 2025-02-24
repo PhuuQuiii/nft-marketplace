@@ -1,8 +1,8 @@
 // test smart contract bằng Hardhat + Chai để kiểm tra việc triển khai NFT Marketplace.
 const { expect } = require("chai");
 
-const toWei = (num) => ethers.utils.parseEther(num.toString()) // 1 Ether = 10¹⁸ Wei
-const fromWei = (num) => ethers.utils.formatEther(num) // Chuyển đổi từ Wei sang Ether
+const toWei = (num) => ethers.utils.parseEther(num.toString()); // 1 Ether = 10¹⁸ Wei
+const fromWei = (num) => ethers.utils.formatEther(num); // Chuyển đổi từ Wei sang Ether
 
 describe("NFTMarketplace", function () {
   // describe() nhóm tất cả các test case liên quan đến NFTMarketplace
@@ -40,7 +40,7 @@ describe("NFTMarketplace", function () {
       expect(await marketplace.feePercent()).to.equal(feePercent); //  Phần trăm phí giao dịch mà marketplace thu.
     });
 
-      // kiểm thử "Minting NFTs"
+    // kiểm thử "Minting NFTs"
     describe("Minting NFTs", function () {
       it("Should track each minted NFT", async function () {
         // addr1 mints an nft
@@ -86,10 +86,87 @@ describe("NFTMarketplace", function () {
         expect(item.sold).to.equal(false);
       });
 
-      it("Should fail if price is set to zero", async function () { // Kiểm tra lỗi khi giá là 0
+      it("Should fail if price is set to zero", async function () {
+        // Kiểm tra lỗi khi giá là 0
         await expect(
           marketplace.connect(addr1).makeItem(nft.address, 1, 0)
-        ).to.be.revertedWith("Price must be greater than zero");// in ra lỗi "Price must be greater than zero"
+        ).to.be.revertedWith("Price must be greater than zero"); // in ra lỗi "Price must be greater than zero"
+      });
+    });
+
+    // Kiểm tra người dùng mua NFT trên marketplace
+    describe("Purchasing marketplace items", function () {
+      let price = 2;
+      let fee = (feePercent / 100) * price;
+      let totalPriceInWei;
+      beforeEach(async function () {
+        // addr1 mints an nft
+        await nft.connect(addr1).mint(URI);
+        // addr1 approves marketplace to spend tokens
+        await nft.connect(addr1).setApprovalForAll(marketplace.address, true);
+        // addr1 makes their nft a marketplace item.
+        await marketplace.connect(addr1).makeItem(nft.address, 1, toWei(price));
+      });
+      it("Should update item as sold, pay seller, transfer NFT to buyer, charge fees and emit a Bought event", async function () {
+        // Lấy số dư ETH ban đầu của addr1 (người bán) và deployer (marketplace).
+        const sellerInitalEthBal = await addr1.getBalance();
+        const feeAccountInitialEthBal = await deployer.getBalance();
+        //  Lấy tổng giá tiền của NFT (bao gồm phí)
+        totalPriceInWei = await marketplace.getTotalPrice(1);
+        // Thực hiện giao dịch mua.
+        await expect(
+          marketplace.connect(addr2).purchaseItem(1, { value: totalPriceInWei }) // purchaseItem nhận kèm ETH từ người mua khi được gọi
+        )
+          .to.emit(marketplace, "Bought")
+          .withArgs(
+            1,
+            nft.address,
+            1,
+            toWei(price),
+            addr1.address,
+            addr2.address
+          );
+        // Lưu số dư ETH của người bán & marketplace sau giao dịch
+        const sellerFinalEthBal = await addr1.getBalance();
+        const feeAccountFinalEthBal = await deployer.getBalance();
+        //  NFT đã được bán
+        expect((await marketplace.items(1)).sold).to.equal(true);
+        // Người bán nhận đúng số tiền
+        expect(+fromWei(sellerFinalEthBal)).to.equal(
+          +price + +fromWei(sellerInitalEthBal) // Số dư ETH của người bán = số dư trước + giá NFT (2 ETH).
+        );
+        // Marketplace nhận đúng phí giao dịch
+        expect(+fromWei(feeAccountFinalEthBal)).to.equal(
+          +fee + +fromWei(feeAccountInitialEthBal) // Số dư ETH của marketplace = số dư trước + phí giao dịch.
+        );
+        // NFT tokenId = 1 phải thuộc về addr2 (người mua)
+        expect(await nft.ownerOf(1)).to.equal(addr2.address);
+      });
+      it("Should fail for invalid item ids, sold items and when not enough ether is paid", async function () {
+        // Kiểm tra lỗi khi nhập ID không hợp lệ
+        await expect(
+          marketplace.connect(addr2).purchaseItem(2, { value: totalPriceInWei })
+        ).to.be.revertedWith("item doesn't exist");
+        await expect(
+          marketplace.connect(addr2).purchaseItem(0, { value: totalPriceInWei })
+        ).to.be.revertedWith("item doesn't exist");
+        //  Kiểm tra lỗi khi gửi thiếu ETH
+        await expect(
+          marketplace.connect(addr2).purchaseItem(1, { value: toWei(price) }) // Chỉ gửi số tiền đúng bằng giá NFT, không tính phí giao dịch
+        ).to.be.revertedWith(
+          "not enough ether to cover item price and market fee"
+        );
+        // Kiểm tra lỗi khi mua lại NFT đã bán
+        // addr2 purchases item 1
+        await marketplace
+          .connect(addr2)
+          .purchaseItem(1, { value: totalPriceInWei });
+        // deployer tries purchasing item 1 after its been sold
+        await expect(
+          marketplace
+            .connect(deployer)
+            .purchaseItem(1, { value: totalPriceInWei })
+        ).to.be.revertedWith("item already sold");
       });
     });
   });
