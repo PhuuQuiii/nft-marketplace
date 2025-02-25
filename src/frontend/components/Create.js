@@ -1,75 +1,84 @@
 import { useState } from "react";
 import { ethers } from "ethers";
-import { Row, Form, Button } from "react-bootstrap";
-import { create as ipfsHttpClient } from "ipfs-http-client"; // Dùng để upload dữ liệu lên IPFS (InterPlanetary File System).
+import { Row, Form, Button, Toast, ToastContainer } from "react-bootstrap";
+import { create as ipfsHttpClient } from "ipfs-http-client"; // Dùng để upload dữ liệu lên IPFS
 
-// //  Kết nối với IPFS node thông qua Infura
-// const projectId = "453b9b294b434c6abbfeb915bd15de17";
-// const projectSecret = "oepZzE/puUpgERoPQhFxqie5f9SXCK1+Bkfr2EhDdQs+XTX4ZUYbxA";
-// const auth =
-//   "Basic " + Buffer.from(projectId + ":" + projectSecret).toString("base64");
+// Cấu hình kết nối tới IPFS node của bạn (IPFS Docker)
+const client = ipfsHttpClient({
+  host: "localhost",  // Đảm bảo rằng sử dụng localhost cho IPFS Docker container
+  port: 5001,         // Cổng API của IPFS
+  protocol: "http",   // Giao thức HTTP (sử dụng HTTP thay vì HTTPS trong phát triển)
+});
 
-// // Connect to IPFS node through Infura with authentication
-// const client = ipfsHttpClient({
-//   host: "ipfs.infura.io",
-//   port: 5001,
-//   protocol: "https",
-//   headers: {
-//     authorization: auth,
-//   },
-// });
-
-const client = ipfsHttpClient('https://ipfs.infura.io:5001/api/v0')
-
-
+// Tạo Component Create cho việc upload và tạo NFT
 const Create = ({ marketplace, nft }) => {
-  const [image, setImage] = useState("");
+  const [image, setImage] = useState("");  // Dùng để lưu đường dẫn ảnh từ IPFS
   const [price, setPrice] = useState(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-
-  //  Xử lý tải ảnh lên IPFS
+  const [showSuccessToast, setShowSuccessToast] = useState(false); // Trạng thái cho toast thông báo thành công
+  
+  
   const uploadToIPFS = async (event) => {
     event.preventDefault();
     const file = event.target.files[0];
     if (typeof file !== "undefined") {
       try {
-        const result = await client.add(file); // upload file lên IPFS
+        const result = await client.add(file); // Upload file lên IPFS
         console.log(result);
-        setImage(`https://ipfs.infura.io/ipfs/${result.path}`); // lưu vào image
+        setImage(`http://localhost:8080/ipfs/${result.path}`); // Lưu đường dẫn ảnh từ IPFS
       } catch (error) {
         console.log("ipfs image upload error: ", error);
       }
     }
   };
+
   // Tạo NFT và đưa vào Marketplace
   const createNFT = async () => {
-    console.log("hello");
     if (!image || !price || !name || !description) return;
     try {
       const result = await client.add(
         JSON.stringify({ image, price, name, description })
       ); // Tạo metadata JSON cho NFT và tải nó lên IPFS
       mintThenList(result); // Mint NFT và đưa vào Marketplace
+      setShowSuccessToast(true);  // Hiển thị thông báo thành công
+      console.log("NFT created and listed!");
     } catch (error) {
       console.log("ipfs uri upload error: ", error);
     }
   };
 
-  // Mint NFT và niêm yết trên Marketplace
   const mintThenList = async (result) => {
-    // Lấy URI metadata từ IPFS
-    const uri = `https://ipfs.infura.io/ipfs/${result.path}`;
-    // mint nft
-    await (await nft.mint(uri)).wait();
-    // Lấy tokenId của NFT vừa mint.
-    const id = await nft.tokenCount();
-    // Cấp quyền (setApprovalForAll) để marketplace có thể quản lý NFT này
-    await (await nft.setApprovalForAll(marketplace.address, true)).wait();
-    // List NFT trên marketplace với giá quy đổi sang ETH
-    const listingPrice = ethers.utils.parseEther(price.toString());
-    await (await marketplace.makeItem(nft.address, id, listingPrice)).wait();
+    const uri = `http://localhost:8080/ipfs/${result.path}`; // Lấy URI metadata từ IPFS
+    console.log("URI:", uri);
+    try {
+      // Mint NFT
+      const mintTransaction = await nft.mint(uri);
+      const mintReceipt = await mintTransaction.wait();  // Đợi giao dịch mint hoàn tất
+  
+      // Kiểm tra tokenCount sau khi mint
+      const id = await nft.tokenCount();  // Đảm bảo rằng tokenCount được gọi sau khi mint thành công
+      console.log("Token Count:", id.toString());  // In ra token count
+  
+      // Cấp quyền cho marketplace
+      const approvalTransaction = await nft.setApprovalForAll(marketplace.address, true);
+      await approvalTransaction.wait();
+  
+      const listingPrice = ethers.utils.parseEther(price.toString());
+      const listingTransaction = await marketplace.makeItem(nft.address, id, listingPrice);
+      await listingTransaction.wait();
+  
+      console.log("NFT Minted and Listed!");
+    } catch (error) {
+      console.error("Error in mintThenList:", error.message);  // In ra chi tiết lỗi
+      if (error.data) {
+        console.error("Error data:", error.data);  // In ra thông tin dữ liệu chi tiết nếu có
+      }
+    }
   };
+  
+  
+  
   return (
     <div className="container-fluid mt-5">
       <div className="row">
@@ -84,7 +93,7 @@ const Create = ({ marketplace, nft }) => {
                 type="file"
                 required
                 name="file"
-                onChange={uploadToIPFS}
+                onChange={uploadToIPFS} // Xử lý tải ảnh lên IPFS
               />
               <Form.Control
                 onChange={(e) => setName(e.target.value)}
@@ -116,6 +125,18 @@ const Create = ({ marketplace, nft }) => {
           </div>
         </main>
       </div>
+
+      {/* Toast Container for Success Message */}
+      <ToastContainer position="top-end">
+        <Toast
+          onClose={() => setShowSuccessToast(false)}
+          show={showSuccessToast}
+          delay={3000}
+          autohide
+        >
+          <Toast.Body>🎉 NFT created and listed successfully!</Toast.Body>
+        </Toast>
+      </ToastContainer>
     </div>
   );
 };
