@@ -3,14 +3,15 @@ import {
 } from "react-router-dom";
 import { Navbar, Nav, Button, Container } from 'react-bootstrap'
 import market from './market.png'
+import bao from './logo bao.jpg'
 
 const Navigation = ({ web3Handler, account }) => {
     return (
         <Navbar expand="lg" bg="secondary" variant="dark">
             <Container>
-                <Navbar.Brand href="http://www.dappuniversity.com/bootcamp">
-                    <img src={market} width="40" height="40" className="" alt="" />
-                    &nbsp; DApp NFT Marketplace
+                <Navbar.Brand href="https://www.facebook.com/ngyen.qui.9/">
+                    <img src={bao} width="40" height="40" className="" alt="" />
+                    &nbsp; DApp NFT Marketplace BASO
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                 <Navbar.Collapse id="responsive-navbar-nav">
