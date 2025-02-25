@@ -142,3 +142,7 @@ const Create = ({ marketplace, nft }) => {
 };
 
 export default Create;
+
+// Xác nhận giao dịch tạo NFT
+// Phê duyệt marketplace để quản lý NFT
+// Đưa NFT vào Marketplace với giá listing
