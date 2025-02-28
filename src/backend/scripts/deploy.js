@@ -1,50 +1,62 @@
-async function main() {
-  const [deployer] = await ethers.getSigners(); // Lệnh này lấy danh sách các tài khoản có trong Hardhat ( tài khoản đầu tiên làm tài khoản triển khai hợp đồng )
+const { ethers } = require("ethers");
+const fs = require("fs");
+const path = require("path");
 
-  console.log("Deploying contracts with the account:", deployer.address); // địa chỉ ví
-  console.log("Account balance:", (await deployer.getBalance()).toString()); //  số dư tài khoản
+const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:7545");
 
-  // Get the ContractFactories and Signers here.
-  const NFT = await ethers.getContractFactory("NFT"); // 	lấy một bản mẫu (factory) của hợp đồng "NFT" từ file Solidity.
-  const Marketplace = await ethers.getContractFactory("Marketplace");
+module.exports = async function (callback) {
+  try {
+    // Lấy danh sách tài khoản từ Ganache
+    const accounts = await provider.listAccounts();
+    const deployer = provider.getSigner(accounts[0]);
 
-  // deploy contracts
-  const marketplace = await Marketplace.deploy(1); // thiết lập phí giao dịch của marketplace là 1
-  const nft = await NFT.deploy(); // Triển khai hợp đồng lên blockchain
+    console.log("Deploying contracts with the account:", accounts[0]);
 
-  console.log("NFT contrac address:", nft.address); // Địa chỉ hợp đồng
-  console.log("Marketplace contrac address:", marketplace.address); // Địa chỉ hợp đồng
+    // Load ABI và Bytecode của hợp đồng NFT
+    const NFT_ABI = JSON.parse(fs.readFileSync(path.join(__dirname, "../artifacts/NFT.json"), "utf8")).abi;
+    const NFT_BYTECODE = JSON.parse(fs.readFileSync(path.join(__dirname, "../artifacts/NFT.json"), "utf8")).bytecode;
 
-  // Save copies of each contracts abi and address to the frontend.
-  saveFrontendFiles(marketplace, "Marketplace");
-  saveFrontendFiles(nft, "NFT"); // Lưu trữ địa chỉ và ABI của smart contract để frontend sử dụng.
-}
+    // Load ABI và Bytecode của hợp đồng Marketplace
+    const MARKETPLACE_ABI = JSON.parse(fs.readFileSync(path.join(__dirname, "../artifacts/Marketplace.json"), "utf8")).abi;
+    const MARKETPLACE_BYTECODE = JSON.parse(fs.readFileSync(path.join(__dirname, "../artifacts/Marketplace.json"), "utf8")).bytecode;
+
+    // Deploy NFT contract
+    const NFTFactory = new ethers.ContractFactory(NFT_ABI, NFT_BYTECODE, deployer);
+    const nft = await NFTFactory.deploy();
+    await nft.deployed();
+    console.log("NFT contract deployed at:", nft.address);
+
+    // Deploy Marketplace contract với phí 1%
+    const MarketplaceFactory = new ethers.ContractFactory(MARKETPLACE_ABI, MARKETPLACE_BYTECODE, deployer);
+    const marketplace = await MarketplaceFactory.deploy(1);
+    await marketplace.deployed();
+    console.log("Marketplace contract deployed at:", marketplace.address);
+
+    // Lưu thông tin hợp đồng vào frontend
+    saveFrontendFiles(nft, "NFT");
+    saveFrontendFiles(marketplace, "Marketplace");
+
+    callback(); // Kết thúc script
+  } catch (error) {
+    console.error(error);
+    callback(error);
+  }
+};
 
 function saveFrontendFiles(contract, name) {
-  // Lưu trữ thông tin hợp đồng
-  const fs = require("fs");
-  const contractsDir = __dirname + "/../../frontend/contractsData"; // thư mục chứa thông tin hợp đồng trong frontend.
+  const contractsDir = path.join(__dirname, "../../frontend/contractsData");
 
   if (!fs.existsSync(contractsDir)) {
-    fs.mkdirSync(contractsDir);
+    fs.mkdirSync(contractsDir, { recursive: true });
   }
 
   fs.writeFileSync(
-    contractsDir + `/${name}-address.json`, // Lưu địa chỉ hợp đồng vào file JSON
-    JSON.stringify({ address: contract.address }, undefined, 2)
+    path.join(contractsDir, `${name}-address.json`),
+    JSON.stringify({ address: contract.address }, null, 2)
   );
-
-  const contractArtifact = artifacts.readArtifactSync(name);
 
   fs.writeFileSync(
-    contractsDir + `/${name}.json`, // Lấy ABI của hợp đồng và lưu vào file JSON.
-    JSON.stringify(contractArtifact, null, 2)
+    path.join(contractsDir, `${name}.json`),
+    JSON.stringify({ abi: contract.interface.format(ethers.utils.FormatTypes.json) }, null, 2)
   );
 }
-
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
