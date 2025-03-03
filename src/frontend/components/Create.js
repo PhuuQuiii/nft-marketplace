@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Row, Form, Button, Toast, ToastContainer } from "react-bootstrap";
 import axios from "axios"; // Sử dụng axios để gọi API
+import { ethers } from 'ethers';
+
 
 // Tạo Component Create cho việc upload và tạo NFT
 const Create = () => {
