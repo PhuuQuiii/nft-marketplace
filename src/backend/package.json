@@ -18,6 +18,7 @@
     "dotenv": "^16.4.7",
     "ethers": "^5.8.0",
     "express": "^4.21.2",
+    "express-fileupload": "^1.5.1",
     "truffle": "^5.11.5",
     "web3": "^4.16.0"
   },

@@ -4,12 +4,14 @@ const cors = require("cors");
 const { create: ipfsHttpClient } = require("ipfs-http-client"); // Import IPFS client
 const nftRoutes = require("./routes/nftRoutes");
 const marketplaceRoutes = require("./routes/marketplaceRoutes");
+const fileUpload = require("express-fileupload");
 
 const app = express();
 
 // Middleware
 app.use(express.json());
 app.use(cors());
+app.use(fileUpload()); 
 
 // Lấy thông tin IPFS từ .env
 const IPFS_HOST = process.env.IPFS_HOST || "localhost";
@@ -31,14 +33,14 @@ app.get("/", (req, res) => {
 // API để upload dữ liệu lên IPFS
 app.post("/upload", async (req, res) => {
   try {
-    const { data } = req.body;
+    const file = req.files.file; // Lấy file từ req.files
 
-    if (!data) {
-      return res.status(400).json({ error: "No data provided" });
+    if (!file) {
+      return res.status(400).json({ error: "No file provided" });
     }
 
-    // Upload dữ liệu lên IPFS
-    const result = await ipfs.add(data);
+    // Upload file lên IPFS
+    const result = await ipfs.add(file.data);
     res.json({ ipfsHash: result.path });
   } catch (error) {
     console.error("Error uploading to IPFS:", error);
