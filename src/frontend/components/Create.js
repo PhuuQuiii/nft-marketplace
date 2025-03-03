@@ -1,32 +1,29 @@
 import { useState } from "react";
-import { ethers } from "ethers";
 import { Row, Form, Button, Toast, ToastContainer } from "react-bootstrap";
-import { create as ipfsHttpClient } from "ipfs-http-client"; // Dùng để upload dữ liệu lên IPFS
-
-// Cấu hình kết nối tới IPFS node của bạn (IPFS Docker)
-const client = ipfsHttpClient({
-  host: "localhost",  // Đảm bảo rằng sử dụng localhost cho IPFS Docker container
-  port: 5001,         // Cổng API của IPFS
-  protocol: "http",   // Giao thức HTTP (sử dụng HTTP thay vì HTTPS trong phát triển)
-});
+import axios from "axios"; // Sử dụng axios để gọi API
 
 // Tạo Component Create cho việc upload và tạo NFT
-const Create = ({ marketplace, nft }) => {
+const Create = () => {
   const [image, setImage] = useState("");  // Dùng để lưu đường dẫn ảnh từ IPFS
   const [price, setPrice] = useState(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [showSuccessToast, setShowSuccessToast] = useState(false); // Trạng thái cho toast thông báo thành công
   
-  
   const uploadToIPFS = async (event) => {
     event.preventDefault();
     const file = event.target.files[0];
     if (typeof file !== "undefined") {
       try {
-        const result = await client.add(file); // Upload file lên IPFS
-        console.log(result);
-        setImage(`http://localhost:8080/ipfs/${result.path}`); // Lưu đường dẫn ảnh từ IPFS
+        const formData = new FormData();
+        formData.append("file", file);
+        const result = await axios.post("http://localhost:5000/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        console.log(result.data);
+        setImage(`http://localhost:8080/ipfs/${result.data.ipfsHash}`); // Lưu đường dẫn ảnh từ IPFS
       } catch (error) {
         console.log("ipfs image upload error: ", error);
       }
@@ -37,10 +34,9 @@ const Create = ({ marketplace, nft }) => {
   const createNFT = async () => {
     if (!image || !price || !name || !description) return;
     try {
-      const result = await client.add(
-        JSON.stringify({ image, price, name, description })
-      ); // Tạo metadata JSON cho NFT và tải nó lên IPFS
-      mintThenList(result); // Mint NFT và đưa vào Marketplace
+      const metadata = { image, price, name, description };
+      const result = await axios.post("http://localhost:5000/upload", metadata);
+      mintThenList(result.data.ipfsHash); // Mint NFT và đưa vào Marketplace
       setShowSuccessToast(true);  // Hiển thị thông báo thành công
       console.log("NFT created and listed!");
     } catch (error) {
@@ -48,37 +44,33 @@ const Create = ({ marketplace, nft }) => {
     }
   };
 
-  const mintThenList = async (result) => {
-    const uri = `http://localhost:8080/ipfs/${result.path}`; // Lấy URI metadata từ IPFS
+  const mintThenList = async (ipfsHash) => {
+    const uri = `http://localhost:8080/ipfs/${ipfsHash}`; // Lấy URI metadata từ IPFS
     console.log("URI:", uri);
     try {
       // Mint NFT
-      const mintTransaction = await nft.mint(uri);
-      const mintReceipt = await mintTransaction.wait();  // Đợi giao dịch mint hoàn tất
-  
-      // Kiểm tra tokenCount sau khi mint
-      const id = await nft.tokenCount();  // Đảm bảo rằng tokenCount được gọi sau khi mint thành công
-      console.log("Token Count:", id.toString());  // In ra token count
-  
+      const mintResponse = await axios.post("http://localhost:5000/nft/mint", { tokenURI: uri });
+      const tokenId = mintResponse.data.tokenId;
+
       // Cấp quyền cho marketplace
-      const approvalTransaction = await nft.setApprovalForAll(marketplace.address, true);
-      await approvalTransaction.wait();
-  
+      await axios.post("http://localhost:5000/nft/approve", { tokenId });
+
       const listingPrice = ethers.utils.parseEther(price.toString());
-      const listingTransaction = await marketplace.makeItem(nft.address, id, listingPrice);
-      await listingTransaction.wait();
-  
+      await axios.post("http://localhost:5000/marketplace/list", {
+        nftAddress: process.env.NFT_CONTRACT_ADDRESS,
+        tokenId,
+        price: listingPrice.toString(),
+      });
+
       console.log("NFT Minted and Listed!");
     } catch (error) {
       console.error("Error in mintThenList:", error.message);  // In ra chi tiết lỗi
-      if (error.data) {
-        console.error("Error data:", error.data);  // In ra thông tin dữ liệu chi tiết nếu có
+      if (error.response && error.response.data) {
+        console.error("Error data:", error.response.data);  // In ra thông tin dữ liệu chi tiết nếu có
       }
     }
   };
-  
-  
-  
+
   return (
     <div className="container-fluid mt-5">
       <div className="row">
@@ -142,7 +134,3 @@ const Create = ({ marketplace, nft }) => {
 };
 
 export default Create;
-
-// Xác nhận giao dịch tạo NFT
-// Phê duyệt marketplace để quản lý NFT
-// Đưa NFT vào Marketplace với giá listing

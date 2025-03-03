@@ -1,6 +1,7 @@
 const { ethers } = require("ethers");
 const fs = require("fs");
 const path = require("path");
+const dotenv = require("dotenv");
 
 const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:7545");
 
@@ -59,4 +60,18 @@ function saveFrontendFiles(contract, name) {
     path.join(contractsDir, `${name}.json`),
     JSON.stringify({ abi: contract.interface.format(ethers.utils.FormatTypes.json) }, null, 2)
   );
+}
+
+function updateEnvFile(nftAddress, marketplaceAddress) {
+  const envFilePath = path.join(__dirname, '../.env');
+  const envConfig = dotenv.parse(fs.readFileSync(envFilePath));
+
+  envConfig.NFT_CONTRACT_ADDRESS = nftAddress;
+  envConfig.MARKETPLACE_CONTRACT_ADDRESS = marketplaceAddress;
+
+  const updatedEnvConfig = Object.keys(envConfig).map(key => `${key}=${envConfig[key]}`).join('\n');
+
+  fs.writeFileSync(envFilePath, updatedEnvConfig);
+
+  console.log('Updated .env file with new contract addresses.');
 }
