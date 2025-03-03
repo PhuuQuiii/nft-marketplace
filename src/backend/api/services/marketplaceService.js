@@ -5,13 +5,22 @@ const { provider, getSigner } = require("../utils/web3Provider");
 const config = require("../utils/config");
 
 // Load ABI của Marketplace contract
-const MARKETPLACE_ABI = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../frontend/contractsData/Marketplace.json"), "utf8")).abi;
+const MARKETPLACE_ABI = JSON.parse(
+  fs.readFileSync(
+    path.join(__dirname, "../../../frontend/contractsData/Marketplace.json"),
+    "utf8"
+  )
+).abi;
 
 // Địa chỉ hợp đồng Marketplace (cần cập nhật sau khi deploy)
 const MARKETPLACE_ADDRESS = config.MARKETPLACE_CONTRACT_ADDRESS;
 
 // Tạo instance của contract Marketplace
-const marketplaceContract = new ethers.Contract(MARKETPLACE_ADDRESS, MARKETPLACE_ABI, provider);
+const marketplaceContract = new ethers.Contract(
+  MARKETPLACE_ADDRESS,
+  MARKETPLACE_ABI,
+  provider
+);
 
 /**
  * Đăng NFT lên Marketplace để bán

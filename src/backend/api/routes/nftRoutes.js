@@ -1,5 +1,10 @@
 const express = require("express");
-const { mintNFT, getNFTMetadata, transferNFT, uploadMetadataToIPFS } = require("../controllers/nftController");
+const {
+  mintNFT,
+  getNFTMetadata,
+  transferNFT,
+  uploadMetadataToIPFS,
+} = require("../controllers/nftController");
 
 const router = express.Router();
 

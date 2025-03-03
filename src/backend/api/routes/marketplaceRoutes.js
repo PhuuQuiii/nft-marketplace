@@ -2,7 +2,7 @@ const express = require("express");
 const {
   listNFTForSale,
   buyNFT,
-  getTotalPrice
+  getTotalPrice,
 } = require("../controllers/marketplaceController");
 
 const router = express.Router();

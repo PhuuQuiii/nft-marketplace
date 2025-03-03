@@ -6,13 +6,17 @@ const marketplaceService = require("../services/marketplaceService");
  * @param {number} tokenId - ID của NFT
  * @param {string} price - Giá bán NFT (wei)
  */
-exports.listNFTForSale = async (req, res) => {
+const listNFTForSale = async (req, res) => {
   try {
     const { nftAddress, tokenId, price } = req.body;
     if (!nftAddress || !tokenId || !price) {
       return res.status(400).json({ error: "Missing required fields" });
     }
-    const result = await marketplaceService.listNFTForSale(nftAddress, tokenId, price);
+    const result = await marketplaceService.listNFTForSale(
+      nftAddress,
+      tokenId,
+      price
+    );
     res.json(result);
   } catch (error) {
     console.error("Error listing NFT for sale:", error);
@@ -25,7 +29,7 @@ exports.listNFTForSale = async (req, res) => {
  * @param {number} itemId - ID của Item cần mua
  * @param {string} price - Giá NFT (wei)
  */
-exports.buyNFT = async (req, res) => {
+const buyNFT = async (req, res) => {
   try {
     const { itemId, price } = req.body;
     if (!itemId || !price) {
@@ -43,7 +47,7 @@ exports.buyNFT = async (req, res) => {
  * Lấy tổng giá tiền NFT cần thanh toán
  * @param {number} itemId - ID của Item
  */
-exports.getTotalPrice = async (req, res) => {
+const getTotalPrice = async (req, res) => {
   try {
     const { itemId } = req.params;
     const totalPrice = await marketplaceService.getTotalPrice(itemId);
@@ -54,8 +58,4 @@ exports.getTotalPrice = async (req, res) => {
   }
 };
 
-module.exports = {
-  listNFTForSale,
-  buyNFT,
-  getTotalPrice,
-};
+module.exports = { listNFTForSale, buyNFT, getTotalPrice };

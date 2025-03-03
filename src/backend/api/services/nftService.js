@@ -5,7 +5,12 @@ const { provider, getSigner } = require("../utils/web3Provider");
 const config = require("../utils/config");
 
 // Load ABI của NFT contract
-const NFT_ABI = JSON.parse(fs.readFileSync(path.join(__dirname, "../../../frontend/contractsData/NFT.json"), "utf8")).abi;
+const NFT_ABI = JSON.parse(
+  fs.readFileSync(
+    path.join(__dirname, "../../../frontend/contractsData/NFT.json"),
+    "utf8"
+  )
+).abi;
 
 // Địa chỉ hợp đồng NFT (cần cập nhật sau khi deploy)
 const NFT_ADDRESS = config.NFT_CONTRACT_ADDRESS;
