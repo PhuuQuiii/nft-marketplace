@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Row, Form, Button, Toast, ToastContainer } from "react-bootstrap";
 import axios from "axios"; // Sử dụng axios để gọi API
-import { ethers } from "ethers";
 
 // Tạo Component Create cho việc upload và tạo NFT
 const Create = () => {
@@ -40,41 +39,11 @@ const Create = () => {
     if (!image || !price || !name || !description) return;
     try {
       const metadata = { image, price, name, description };
-      const result = await axios.post("http://localhost:5000/upload", metadata);
-      mintThenList(result.data.ipfsHash); // Mint NFT và đưa vào Marketplace
+      const result = await axios.post("http://localhost:5000/nft/createAndList", metadata);
       setShowSuccessToast(true); // Hiển thị thông báo thành công
-      console.log("NFT created and listed!");
+      console.log("NFT created and listed!", result.data);
     } catch (error) {
       console.log("ipfs uri upload error: ", error);
-    }
-  };
-
-  const mintThenList = async (ipfsHash) => {
-    const uri = `http://localhost:8080/ipfs/${ipfsHash}`; // Lấy URI metadata từ IPFS
-    console.log("URI:", uri);
-    try {
-      // Mint NFT
-      const mintResponse = await axios.post("http://localhost:5000/nft/mint", {
-        tokenURI: uri,
-      });
-      const tokenId = mintResponse.data.tokenId;
-
-      // Cấp quyền cho marketplace
-      await axios.post("http://localhost:5000/nft/approve", { tokenId });
-
-      const listingPrice = ethers.utils.parseEther(price.toString());
-      await axios.post("http://localhost:5000/marketplace/list", {
-        nftAddress: process.env.NFT_CONTRACT_ADDRESS,
-        tokenId,
-        price: listingPrice.toString(),
-      });
-
-      console.log("NFT Minted and Listed!");
-    } catch (error) {
-      console.error("Error in mintThenList:", error.message); // In ra chi tiết lỗi
-      if (error.response && error.response.data) {
-        console.error("Error data:", error.response.data); // In ra thông tin dữ liệu chi tiết nếu có
-      }
     }
   };
 
@@ -133,7 +102,7 @@ const Create = () => {
           delay={3000}
           autohide
         >
-          <Toast.Body>🎉 NFT created and listed successfully!</Toast.Body>
+          <Toast.Body> NFT created and listed successfully!</Toast.Body>
         </Toast>
       </ToastContainer>
     </div>

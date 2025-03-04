@@ -2,7 +2,6 @@ import {
     Link
 } from "react-router-dom";
 import { Navbar, Nav, Button, Container } from 'react-bootstrap'
-import market from './market.png'
 import bao from './logo bao.jpg'
 
 const Navigation = ({ web3Handler, account }) => {
@@ -20,6 +19,7 @@ const Navigation = ({ web3Handler, account }) => {
                         <Nav.Link as={Link} to="/create">Create</Nav.Link>
                         <Nav.Link as={Link} to="/my-listed-items">My Listed Items</Nav.Link>
                         <Nav.Link as={Link} to="/my-purchases">My Purchases</Nav.Link>
+                        <Nav.Link as={Link} to="/Profile">Profile</Nav.Link>
                     </Nav>
                     <Nav>
                         {account ? (

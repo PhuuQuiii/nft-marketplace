@@ -13,4 +13,5 @@ module.exports = {
   // Địa chỉ smart contract (sẽ cập nhật sau khi deploy)
   NFT_CONTRACT_ADDRESS: process.env.NFT_CONTRACT_ADDRESS || "",
   MARKETPLACE_CONTRACT_ADDRESS: process.env.MARKETPLACE_CONTRACT_ADDRESS || "",
+  MARKETPLACE_ABI: require("../../../frontend/contractsData/Marketplace.json").abi, // ABI của Marketplace
 };

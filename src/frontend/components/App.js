@@ -4,6 +4,7 @@ import Home from "./Home.js";
 import Create from "./Create.js";
 import MyListedItems from "./MyListedItems.js";
 import MyPurchases from "./MyPurchases.js";
+import Profile from "./Profile";
 import MarketplaceAbi from "../contractsData/Marketplace.json";
 import MarketplaceAddress from "../contractsData/Marketplace-address.json";
 import NFTAbi from "../contractsData/NFT.json";
@@ -108,6 +109,10 @@ function App() {
                     account={account}
                   />
                 }
+              />
+              <Route
+                path="/profile"
+                element={<Profile walletAddress={account} />}
               />
             </Routes>
           )}

@@ -1,21 +1,79 @@
 const nftService = require("../services/nftService");
+const { ethers } = require("ethers");
 
 /**
- * Mint NFT
- * @param {string} tokenURI - URI metadata trên IPFS
+ * Tạo NFT và niêm yết lên chợ
+ * @param {object} metadata - Metadata của NFT
  */
-exports.mintNFT = async (req, res) => {
+exports.createAndListNFT = async (req, res) => {
   try {
-    const { tokenURI } = req.body;
-    if (!tokenURI) {
-      return res.status(400).json({ error: "Missing tokenURI" });
+    const { image, price, name, description } = req.body;
+    if (!image || !price || !name || !description) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const tx = await nftService.mintNFT(tokenURI);
-    res.json({ message: "NFT minted successfully", transaction: tx });
+    // Upload metadata lên IPFS
+    const metadata = { image, price, name, description };
+    const ipfsHash = await nftService.uploadMetadataToIPFS(metadata);
+    const uri = `http://localhost:8080/ipfs/${ipfsHash}`;
+
+    // Mint NFT
+    const mintTransaction = await nftService.mintNFT(uri);
+    const mintReceipt = await mintTransaction.wait();
+    const tokenId = mintReceipt.events[0].args.tokenId.toString();
+
+    // Cấp quyền cho marketplace
+    const approvalTransaction = await nftService.approveNFT(tokenId);
+    await approvalTransaction.wait();
+
+    // Niêm yết NFT lên chợ
+    const listingPrice = ethers.utils.parseEther(price.toString());
+    const listingTransaction = await nftService.listNFT(tokenId, listingPrice);
+    await listingTransaction.wait();
+
+    res.json({ message: "NFT created and listed successfully", tokenId });
   } catch (error) {
-    console.error("Error minting NFT:", error);
-    res.status(500).json({ error: "Failed to mint NFT" });
+    console.error("Error creating and listing NFT:", error);
+    res.status(500).json({ error: "Failed to create and list NFT" });
+  }
+};
+
+// /**
+//  * Mint NFT
+//  * @param {string} tokenURI - URI metadata trên IPFS
+//  */
+// exports.mintNFT = async (req, res) => {
+//   try {
+//     const { tokenURI } = req.body;
+//     if (!tokenURI) {
+//       return res.status(400).json({ error: "Missing tokenURI" });
+//     }
+
+//     const tx = await nftService.mintNFT(tokenURI);
+//     res.json({ message: "NFT minted successfully", transaction: tx });
+//   } catch (error) {
+//     console.error("Error minting NFT:", error);
+//     res.status(500).json({ error: "Failed to mint NFT" });
+//   }
+// };
+
+
+/**
+ * Lấy danh sách NFT của một tài khoản ví
+ * @param {string} address - Địa chỉ ví
+ */
+exports.getNFTsByOwner = async (req, res) => {
+  try {
+    const { address } = req.params;
+    if (!address) {
+      return res.status(400).json({ error: "Missing address" });
+    }
+
+    const nfts = await nftService.getNFTsByOwner(address);
+    res.json({ nfts });
+  } catch (error) {
+    console.error("Error fetching NFTs by owner:", error);
+    res.status(500).json({ error: "Failed to fetch NFTs by owner" });
   }
 };
 
@@ -55,21 +113,21 @@ exports.transferNFT = async (req, res) => {
   }
 };
 
-/**
- * Upload metadata lên IPFS
- * @param {object} metadata - Metadata của NFT
- */
-exports.uploadMetadataToIPFS = async (req, res) => {
-  try {
-    const { metadata } = req.body;
-    if (!metadata) {
-      return res.status(400).json({ error: "No metadata provided" });
-    }
+// /**
+//  * Upload metadata lên IPFS
+//  * @param {object} metadata - Metadata của NFT
+//  */
+// exports.uploadMetadataToIPFS = async (req, res) => {
+//   try {
+//     const { metadata } = req.body;
+//     if (!metadata) {
+//       return res.status(400).json({ error: "No metadata provided" });
+//     }
 
-    const ipfsHash = await nftService.uploadMetadataToIPFS(metadata);
-    res.json({ ipfsHash });
-  } catch (error) {
-    console.error("Error uploading metadata to IPFS:", error);
-    res.status(500).json({ error: "Failed to upload metadata to IPFS" });
-  }
-};
+//     const ipfsHash = await nftService.uploadMetadataToIPFS(metadata);
+//     res.json({ ipfsHash });
+//   } catch (error) {
+//     console.error("Error uploading metadata to IPFS:", error);
+//     res.status(500).json({ error: "Failed to upload metadata to IPFS" });
+//   }
+// };
