@@ -5,6 +5,7 @@ const { provider, getSigner } = require("../utils/web3Provider");
 const config = require("../utils/config");
 const { create: ipfsHttpClient } = require("ipfs-http-client"); // Import IPFS client
 require("dotenv").config(); // Load biến môi trường từ .env
+const axios = require('axios');
 
 // Load ABI của NFT contract
 const NFT_ABI = JSON.parse(
@@ -80,13 +81,13 @@ const listNFT = async (tokenId, price) => {
 
 // Lây danh sách NFT của một tài khoản
 const getNFTsByOwner = async (address) => {
-  const balance = await nftContract.balanceOf(address);
+  const ownedTokenIds = await nftContract.getOwnedNFTs(address);
   const nfts = [];
 
-  for (let i = 0; i < balance; i++) {
-    const tokenId = await nftContract.tokenOfOwnerByIndex(address, i);
+  for (const tokenId of ownedTokenIds) {
     const tokenURI = await nftContract.tokenURI(tokenId);
     const metadata = await axios.get(tokenURI);
+
     nfts.push({
       tokenId: tokenId.toString(),
       ...metadata.data,
