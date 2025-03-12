@@ -62,16 +62,16 @@ function saveFrontendFiles(contract, name) {
   );
 }
 
-// function updateEnvFile(nftAddress, marketplaceAddress) {
-//   const envFilePath = path.join(__dirname, '../.env');
-//   const envConfig = dotenv.parse(fs.readFileSync(envFilePath));
+function updateEnvFile(nftAddress, marketplaceAddress) {
+  const envFilePath = path.join(__dirname, '../.env');
+  const envConfig = dotenv.parse(fs.readFileSync(envFilePath));
 
-//   envConfig.NFT_CONTRACT_ADDRESS = nftAddress;
-//   envConfig.MARKETPLACE_CONTRACT_ADDRESS = marketplaceAddress;
+  envConfig.NFT_CONTRACT_ADDRESS = nftAddress;
+  envConfig.MARKETPLACE_CONTRACT_ADDRESS = marketplaceAddress;
 
-//   const updatedEnvConfig = Object.keys(envConfig).map(key => `${key}=${envConfig[key]}`).join('\n');
+  const updatedEnvConfig = Object.keys(envConfig).map(key => `${key}=${envConfig[key]}`).join('\n');
 
-//   fs.writeFileSync(envFilePath, updatedEnvConfig);
+  fs.writeFileSync(envFilePath, updatedEnvConfig);
 
-//   console.log('Updated .env file with new contract addresses.');
-// }
+  console.log('Updated .env file with new contract addresses.');
+}
