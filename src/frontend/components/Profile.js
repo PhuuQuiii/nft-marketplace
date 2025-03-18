@@ -2,15 +2,18 @@ import React, { useState, useEffect } from "react";
 import { Card, Row, Col, Spinner, Alert } from "react-bootstrap";
 import { ethers } from "ethers";
 
+
 // ABI của smart contract (rút gọn chỉ giữ các hàm cần thiết)
 const contractABI = [
   "function getOwnedNFTs(address owner) external view returns (uint[] memory)",
   "function tokenURI(uint tokenId) external view returns (string memory)",
 ];
 
-const contractAddress = process.env.NFT_CONTRACT_ADDRESS; // Địa chỉ của smart contract
+console.log(process.env.REACT_APP_NFT_CONTRACT_ADDRESS);
+console.log(process.env.REACT_APP_IPFS_HOST);
+const contractAddress = process.env.REACT_APP_NFT_CONTRACT_ADDRESS; // Địa chỉ của smart contract
 
-const ipfsGateway = process.env.IPFS_HOST; // Gateway để truy cập IPFS
+const ipfsGateway = process.env.REACT_APP_IPFS_HOST; // Gateway để truy cập IPFS
 
 const Profile = ({ walletAddress }) => {
   const [loading, setLoading] = useState(true);
