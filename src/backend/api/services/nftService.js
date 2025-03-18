@@ -79,47 +79,6 @@ const listNFT = async (tokenId, price) => {
   return tx;
 };
 
-// Lây danh sách NFT của một tài khoản
-const getNFTsByOwner = async (address) => {
-  const ownedTokenIds = await nftContract.getOwnedNFTs(address);
-  const nfts = [];
-
-  for (const tokenId of ownedTokenIds) {
-    const tokenURI = await nftContract.tokenURI(tokenId);
-    const metadata = await axios.get(tokenURI);
-
-    nfts.push({
-      tokenId: tokenId.toString(),
-      ...metadata.data,
-    });
-  }
-
-  return nfts;
-};
-
-// /**
-//  * Lấy metadata của một NFT dựa trên tokenId
-//  * @param {number} tokenId - ID của NFT
-//  */
-// const getNFTMetadata = async (tokenId) => {
-//   const tokenURI = await nftContract.tokenURI(tokenId);
-//   return tokenURI;
-// };
-
-/**
- * Chuyển NFT từ người dùng này sang người dùng khác
- * @param {string} from - Địa chỉ người gửi
- * @param {string} to - Địa chỉ người nhận
- * @param {number} tokenId - ID của NFT
- */
-const transferNFT = async (from, to, tokenId) => {
-  const signer = await getSigner();
-  const contractWithSigner = nftContract.connect(signer);
-  const tx = await contractWithSigner.transferFrom(from, to, tokenId);
-  await tx.wait();
-  return tx;
-};
-
 /**
  * Upload metadata lên IPFS
  * @param {object} metadata - Metadata của NFT
@@ -133,8 +92,5 @@ module.exports = {
   mintNFT,
   approveNFT,
   listNFT,
-  // getNFTMetadata,
-  transferNFT,
   uploadMetadataToIPFS,
-  getNFTsByOwner
 };

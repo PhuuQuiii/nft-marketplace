@@ -39,7 +39,7 @@ const Create = () => {
     if (!image || !price || !name || !description) return;
     try {
       const metadata = { image, price, name, description };
-      const result = await axios.post("http://localhost:5000/nft/createAndList", metadata);
+      const result = await axios.post("http://localhost:5000/nft/createNFT", metadata);
       setShowSuccessToast(true); // Hiển thị thông báo thành công
       console.log("NFT created and listed!", result.data);
     } catch (error) {
