@@ -8,9 +8,9 @@ const contractABI = [
   "function tokenURI(uint tokenId) external view returns (string memory)",
 ];
 
-const contractAddress = "0x05aa3071e6F516525d3F6E94cc1B07A0E9B67494";
+const contractAddress = process.env.NFT_CONTRACT_ADDRESS; // Địa chỉ của smart contract
 
-const ipfsGateway = "localhost:8080"; // Gateway để truy cập IPFS
+const ipfsGateway = process.env.IPFS_HOST; // Gateway để truy cập IPFS
 
 const Profile = ({ walletAddress }) => {
   const [loading, setLoading] = useState(true);
