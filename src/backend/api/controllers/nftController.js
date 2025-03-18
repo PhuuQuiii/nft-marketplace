@@ -50,7 +50,15 @@ exports.createNFT = async (req, res) => {
     // Mint NFT
     const mintTransaction = await nftService.mintNFT(uri);
     const mintReceipt = await mintTransaction.wait();
-    const tokenId = mintReceipt.events[0].args.tokenId.toString();
+
+    // Kiểm tra sự kiện và lấy tokenId
+    let tokenId;
+    if (mintReceipt.events && mintReceipt.events.length > 0) {
+      tokenId = mintReceipt.events[0].args.tokenId.toString();
+    } else {
+      // Nếu không có sự kiện, lấy tokenId từ transaction
+      tokenId = await nftService.getTokenIdFromTransaction(mintTransaction);
+    }
 
     res.json({ message: "NFT created successfully", tokenId });
   } catch (error) {
@@ -58,4 +66,3 @@ exports.createNFT = async (req, res) => {
     res.status(500).json({ error: "Failed to create NFT" });
   }
 };
-

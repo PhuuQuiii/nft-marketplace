@@ -6,6 +6,9 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 contract NFT is ERC721URIStorage {
     uint public tokenCount; // Lưu trữ tổng số NFT đã được tạo.
 
+    // Thêm sự kiện Minted
+    event Minted(uint indexed tokenId, address indexed owner, string tokenURI);
+
     constructor() ERC721("DApp NFT", "DAPP") {} //  DApp NFT → Tên của bộ sưu tập NFT, DAPP → Mã token (symbol) của NFT.
 
     function mint(string memory _tokenURI) external returns (uint) {
@@ -13,6 +16,7 @@ contract NFT is ERC721URIStorage {
         tokenCount++; // Mỗi lần tạo mới NFT, giá trị này tăng lên.
         _safeMint(msg.sender, tokenCount); // Mint NFT cho msg.sender (người gọi hàm) // tokenCount là tokenId của NFT
         _setTokenURI(tokenCount, _tokenURI); // Gán tokenURI cho NFT mới và Lưu thông tin metadata của NFT vào server hoặc blockchain, hoặc IPFS
+        emit Minted(tokenCount, msg.sender, _tokenURI); // Phát ra sự kiện Minted
         return (tokenCount); // Trả về tokenId của NFT vừa mint.
     }
 
