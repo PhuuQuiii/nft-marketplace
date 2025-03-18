@@ -40,6 +40,7 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
 
         // Lấy danh sách NFT ID của user
         const tokenIds = await contract.getOwnedNFTs(walletAddress);
+        console.log(tokenIds);
         if (tokenIds.length === 0) {
           setNfts([]);
           setLoading(false);

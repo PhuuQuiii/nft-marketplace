@@ -7,13 +7,46 @@ const { ethers } = require("ethers");
  */
 exports.createNFT = async (req, res) => {
   try {
-    const { image, price, name, description } = req.body;
-    if (!image || !price || !name || !description) {
+    const { type, image, name, description, attributes } = req.body;
+    if (!type || !image || !name || !description || !attributes) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
+    let metadata;
+    if (type === "Quan") {
+      metadata = {
+        image,
+        name,
+        description,
+        attributes: {
+          color: attributes.color,
+          health: attributes.health,
+          attack: attributes.attack,
+          armor: attributes.armor,
+          speed: attributes.speed,
+          effect1: attributes.effect1,
+          critical: attributes.critical,
+          effect2: attributes.effect2,
+          effect3: attributes.effect3,
+        },
+      };
+    } else if (type === "Điền") {
+      metadata = {
+        image,
+        name,
+        description,
+        attributes: {
+          landName: attributes.landName,
+          info: attributes.info,
+          effect: attributes.effect,
+          stats: attributes.stats,
+        },
+      };
+    } else {
+      return res.status(400).json({ error: "Invalid NFT type" });
+    }
+
     // Upload metadata lên IPFS
-    const metadata = { image, price, name, description };
     const ipfsHash = await nftService.uploadMetadataToIPFS(metadata);
     const uri = `http://localhost:8080/ipfs/${ipfsHash}`;
 
@@ -22,18 +55,10 @@ exports.createNFT = async (req, res) => {
     const mintReceipt = await mintTransaction.wait();
     const tokenId = mintReceipt.events[0].args.tokenId.toString();
 
-    // // Cấp quyền cho marketplace
-    // const approvalTransaction = await nftService.approveNFT(tokenId);
-    // await approvalTransaction.wait();
-
-    // // Niêm yết NFT lên chợ
-    // const listingPrice = ethers.utils.parseEther(price.toString());
-    // const listingTransaction = await nftService.listNFT(tokenId, listingPrice);
-    // await listingTransaction.wait();
-
     res.json({ message: "NFT created successfully", tokenId });
   } catch (error) {
     console.error("Error creating NFT:", error);
     res.status(500).json({ error: "Failed to create NFT" });
   }
 };
+
