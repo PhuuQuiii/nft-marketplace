@@ -9,7 +9,7 @@ import MarketplaceAbi from "../contractsData/Marketplace.json";
 import MarketplaceAddress from "../contractsData/Marketplace-address.json";
 import NFTAbi from "../contractsData/NFT.json";
 import NFTAddress from "../contractsData/NFT-address.json";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ethers } from "ethers";
 import { Spinner } from "react-bootstrap";
 
@@ -25,15 +25,8 @@ function App() {
   // Đối tượng chứa hợp đồng Marketplace
   const [marketplace, setMarketplace] = useState({});
 
-  useEffect(() => {
-    const savedAccount = localStorage.getItem("userAccount");
-    if (savedAccount) {
-      setAccount(savedAccount);
-      web3Handler(); // Tự động kết nối lại MetaMask
-    }
-  }, []);
-  // MetaMask Login/Connect
-  const web3Handler = async () => {
+  // Định nghĩa web3Handler với useCallback
+  const web3Handler = useCallback(async () => {
     const accounts = await window.ethereum.request({
       method: "eth_requestAccounts", // Yêu cầu người dùng kết nối MetaMask
     });
@@ -41,7 +34,7 @@ function App() {
     setAccount(accounts[0]); // Lưu địa chỉ ví vào state
     localStorage.setItem("userAccount", accounts[0]); // Lưu vào localStorage
     // provider: Dùng để giao tiếp với blockchain từ trình duyệt.
-    const provider = new ethers.providers.Web3Provider(window.ethereum); 
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
     // Set signer
     const signer = provider.getSigner(); // Lấy quyền ký giao dịch (được cấp bởi MetaMask).
 
@@ -56,30 +49,39 @@ function App() {
       await web3Handler();
     });
     loadContracts(signer);
-  };
+  }, []); // Mảng phụ thuộc rỗng để chỉ chạy một lần
+
+  useEffect(() => {
+    const savedAccount = localStorage.getItem("userAccount");
+    if (savedAccount) {
+      setAccount(savedAccount);
+      web3Handler(); // Tự động kết nối lại MetaMask
+    }
+  }, [web3Handler]); // Thêm web3Handler vào mảng phụ thuộc
+
   const loadContracts = async (signer) => {
     // Tạo hợp đồng Marketplace bằng ethers.Contract()
-    const marketplace = new ethers.Contract( 
+    const marketplace = new ethers.Contract(
       MarketplaceAddress.address,
       MarketplaceAbi.abi,
       signer
     );
     setMarketplace(marketplace);
-    // // Tạo hợp đồng NFT bằng ethers.Contract()
+    // Tạo hợp đồng NFT bằng ethers.Contract()
     const nft = new ethers.Contract(NFTAddress.address, NFTAbi.abi, signer);
     setNFT(nft);
-    
+
     setLoading(false); // tắt spinner loading
   };
 
   return (
     <BrowserRouter>
-      <div className="App"> 
+      <div className="App">
         <>
-          <Navigation web3Handler={web3Handler} account={account} /> 
+          <Navigation web3Handler={web3Handler} account={account} />
         </>
         <div>
-          {loading ? ( 
+          {loading ? (
             <div
               style={{
                 display: "flex",
@@ -123,7 +125,13 @@ function App() {
               />
               <Route
                 path="/profile"
-                element={<Profile walletAddress={account} marketplace={marketplace} nft={nft} />}
+                element={
+                  <Profile
+                    walletAddress={account}
+                    marketplace={marketplace}
+                    nft={nft}
+                  />
+                }
               />
             </Routes>
           )}

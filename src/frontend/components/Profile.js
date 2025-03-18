@@ -104,11 +104,6 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
     }
   };
 
-  const handleCancelSell = (tokenId) => {
-    // Thêm logic xử lý hủy bán NFT ở đây
-    console.log(`Canceling sell for NFT with ID: ${tokenId}`);
-  };
-
   return (
     <div className="container mt-5">
       <h2>Your NFTs</h2>
@@ -133,12 +128,6 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
                       onClick={() => handleSell(nft.id)}
                     >
                       Sell
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => handleCancelSell(nft.id)}
-                    >
-                      Cancel sell
                     </Button>
                   </div>
                 </Card.Body>

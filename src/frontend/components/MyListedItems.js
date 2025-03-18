@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ethers } from "ethers";
-import { Row, Col, Card } from 'react-bootstrap';
+import { Card, Row, Col, Button } from "react-bootstrap";
+
 
 function renderSoldItems(items) {
   return (
@@ -81,6 +82,11 @@ export default function MyListedItems({ marketplace, nft, account }) {
     );
   }
 
+  const handleCancelSell = (tokenId) => {
+    // Thêm logic xử lý hủy bán NFT ở đây
+    console.log(`Canceling sell for NFT with ID: ${tokenId}`);
+  };
+
   return (
     <div className="flex justify-center">
       {listedItems.length > 0 ? (
@@ -92,6 +98,14 @@ export default function MyListedItems({ marketplace, nft, account }) {
                 <Card>
                   <Card.Img variant="top" src={item.image} />
                   <Card.Footer>{ethers.utils.formatEther(item.totalPrice)} ETH</Card.Footer>
+                  <div className="d-flex gap-2">
+                    <Button
+                      variant="secondary"
+                      onClick={() => handleCancelSell(nft.id)}
+                    >
+                      Cancel sell
+                    </Button>
+                  </div>
                 </Card>
               </Col>
             ))}
