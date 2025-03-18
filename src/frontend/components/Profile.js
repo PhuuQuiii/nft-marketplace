@@ -10,6 +10,8 @@ const contractABI = [
 
 const contractAddress = "0x05aa3071e6F516525d3F6E94cc1B07A0E9B67494";
 
+const ipfsGateway = "localhost:8080"; // Gateway để truy cập IPFS
+
 const Profile = ({ walletAddress }) => {
   const [loading, setLoading] = useState(true);
   const [nfts, setNfts] = useState([]);
@@ -38,11 +40,25 @@ const Profile = ({ walletAddress }) => {
           return;
         }
 
-        // Lấy metadata cho từng NFT
+        // Lấy metadata từ IPFS cho từng NFT
         const nftData = await Promise.all(
           tokenIds.map(async (tokenId) => {
             const tokenUri = await contract.tokenURI(tokenId);
-            return { id: tokenId.toString(), image: tokenUri, name: `NFT #${tokenId}` };
+            const ipfsUrl = tokenUri.replace("ipfs://", ipfsGateway); // Chuyển IPFS URI thành HTTP URL
+
+            // Gọi API để lấy metadata JSON từ IPFS
+            const metadataRes = await fetch(ipfsUrl);
+            const metadata = await metadataRes.json();
+
+            // Chuyển đổi đường dẫn ảnh IPFS thành HTTP URL
+            const imageUrl = metadata.image.replace("ipfs://", ipfsGateway);
+
+            return {
+              id: tokenId.toString(),
+              image: imageUrl,
+              name: metadata.name || `NFT #${tokenId}`,
+              description: metadata.description || "No description available",
+            };
           })
         );
 
@@ -74,6 +90,7 @@ const Profile = ({ walletAddress }) => {
                 <Card.Img variant="top" src={nft.image} alt={`NFT ${nft.id}`} />
                 <Card.Body>
                   <Card.Title>{nft.name}</Card.Title>
+                  <Card.Text>{nft.description}</Card.Text>
                   <Card.Text>Token ID: {nft.id}</Card.Text>
                 </Card.Body>
               </Card>
