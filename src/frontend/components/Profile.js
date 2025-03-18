@@ -60,10 +60,12 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
             // Chuyển đổi đường dẫn ảnh IPFS thành HTTP URL
             const imageUrl = metadata.image.replace("ipfs://", ipfsGateway);
 
+            console.log(metadata);
             return {
               id: tokenId.toString(),
               image: imageUrl,
               name: metadata.name || `NFT #${tokenId}`,
+              attributes: metadata.attributes || [],
             };
           })
         );
@@ -122,6 +124,18 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
                   <Card.Title>{nft.name}</Card.Title>
                   <Card.Text>{nft.description}</Card.Text>
                   <Card.Text>Token ID: {nft.id}</Card.Text>
+                  {Object.keys(nft.attributes).length > 0 && (
+                    <div>
+                      <h6>Attributes:</h6>
+                      <ul className="list-unstyled">
+                        {Object.entries(nft.attributes).map(([key, value], index) => (
+                          <li key={index}>
+                            {key}: {value}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   <div className="d-flex gap-2">
                     <Button
                       variant="primary"
