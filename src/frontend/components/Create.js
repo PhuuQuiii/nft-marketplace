@@ -51,7 +51,6 @@ const Create = () => {
               </Form.Select>
               <Form.Control type="file" required name="file" onChange={uploadToIPFS} />
               <Form.Control onChange={(e) => setName(e.target.value)} size="lg" required type="text" placeholder="Name" />
-              <Form.Control onChange={(e) => setDescription(e.target.value)} size="lg" required as="textarea" placeholder="Description" />
               {type === "Quan" ? (
                 <>
                   <Form.Control onChange={(e) => setAttributes({ ...attributes, color: e.target.value })} size="lg" type="text" placeholder="Color" />
@@ -59,10 +58,13 @@ const Create = () => {
                   <Form.Control onChange={(e) => setAttributes({ ...attributes, attack: e.target.value })} size="lg" type="number" placeholder="Attack" />
                   <Form.Control onChange={(e) => setAttributes({ ...attributes, armor: e.target.value })} size="lg" type="number" placeholder="Armor" />
                   <Form.Control onChange={(e) => setAttributes({ ...attributes, speed: e.target.value })} size="lg" type="number" placeholder="Speed" />
+                  <Form.Control onChange={(e) => setAttributes({ ...attributes, effect1: e.target.value })} size="lg" type="text" placeholder="Effect 1" />
+                  <Form.Control onChange={(e) => setAttributes({ ...attributes, critical: e.target.value })} size="lg" type="number" placeholder="Critical" />
+                  <Form.Control onChange={(e) => setAttributes({ ...attributes, effect2: e.target.value })} size="lg" type="text" placeholder="Effect 2" />
+                  <Form.Control onChange={(e) => setAttributes({ ...attributes, effect3: e.target.value })} size="lg" type="text" placeholder="Effect 3" />
                 </>
               ) : (
                 <>
-                  <Form.Control onChange={(e) => setAttributes({ ...attributes, landName: e.target.value })} size="lg" type="text" placeholder="Land Name" />
                   <Form.Control onChange={(e) => setAttributes({ ...attributes, info: e.target.value })} size="lg" type="text" placeholder="Information" />
                   <Form.Control onChange={(e) => setAttributes({ ...attributes, effect: e.target.value })} size="lg" type="text" placeholder="Effect" />
                   <Form.Control onChange={(e) => setAttributes({ ...attributes, stats: e.target.value })} size="lg" type="text" placeholder="Stats" />

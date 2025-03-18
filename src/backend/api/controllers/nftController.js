@@ -7,8 +7,8 @@ const { ethers } = require("ethers");
  */
 exports.createNFT = async (req, res) => {
   try {
-    const { type, image, name, description, attributes } = req.body;
-    if (!type || !image || !name || !description || !attributes) {
+    const { type, image, name, attributes } = req.body;
+    if (!type || !image || !name || !attributes) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -17,7 +17,6 @@ exports.createNFT = async (req, res) => {
       metadata = {
         image,
         name,
-        description,
         attributes: {
           color: attributes.color,
           health: attributes.health,
@@ -34,9 +33,7 @@ exports.createNFT = async (req, res) => {
       metadata = {
         image,
         name,
-        description,
         attributes: {
-          landName: attributes.landName,
           info: attributes.info,
           effect: attributes.effect,
           stats: attributes.stats,
