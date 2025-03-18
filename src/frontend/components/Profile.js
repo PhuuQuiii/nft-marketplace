@@ -8,7 +8,7 @@ const contractABI = [
   "function tokenURI(uint tokenId) external view returns (string memory)",
 ];
 
-const contractAddress = "0x05aa3071e6F516525d3F6E94cc1B07A0E9B67494";
+const contractAddress = "0xe9e873387F90231843Cc411E58A7F687deB5ec86";
 
 const Profile = ({ walletAddress }) => {
   const [loading, setLoading] = useState(true);
