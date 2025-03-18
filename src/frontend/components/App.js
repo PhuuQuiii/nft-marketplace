@@ -123,7 +123,7 @@ function App() {
               />
               <Route
                 path="/profile"
-                element={<Profile walletAddress={account} />}
+                element={<Profile walletAddress={account} marketplace={marketplace} nft={nft} />}
               />
             </Routes>
           )}

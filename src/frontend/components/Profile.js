@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Card, Row, Col, Spinner, Alert } from "react-bootstrap";
+import { Card, Row, Col, Spinner, Alert, Button } from "react-bootstrap";
 import { ethers } from "ethers";
-
 
 // ABI của smart contract (rút gọn chỉ giữ các hàm cần thiết)
 const contractABI = [
@@ -15,7 +14,7 @@ const contractAddress = process.env.REACT_APP_NFT_CONTRACT_ADDRESS; // Địa ch
 
 const ipfsGateway = process.env.REACT_APP_IPFS_HOST; // Gateway để truy cập IPFS
 
-const Profile = ({ walletAddress }) => {
+const Profile = ({ walletAddress, marketplace, nft }) => {
   const [loading, setLoading] = useState(true);
   const [nfts, setNfts] = useState([]);
   const [error, setError] = useState("");
@@ -33,7 +32,11 @@ const Profile = ({ walletAddress }) => {
         setError("");
 
         const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const contract = new ethers.Contract(contractAddress, contractABI, provider);
+        const contract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          provider
+        );
 
         // Lấy danh sách NFT ID của user
         const tokenIds = await contract.getOwnedNFTs(walletAddress);
@@ -77,6 +80,35 @@ const Profile = ({ walletAddress }) => {
     fetchNFTs();
   }, [walletAddress]);
 
+  const handleSell = async (tokenId) => {
+    console.log(tokenId)
+    try {
+      // Cấp quyền cho marketplace quản lý NFT
+      await (await nft.setApprovalForAll(marketplace.address, true)).wait();
+
+      // Đặt giá cho NFT (giá này có thể được lấy từ một input hoặc giá mặc định)
+      const price = prompt("Enter price in ETH for the NFT:"); // Yêu cầu người dùng nhập giá
+      if (!price) return;
+
+      // Niêm yết NFT trên marketplace
+      const listingPrice = ethers.utils.parseEther(price.toString());
+      await (
+        await marketplace.makeItem(nft.address, tokenId, listingPrice)
+      ).wait();
+
+      console.log(
+        `NFT with ID: ${tokenId} has been listed for sale at ${price} ETH`
+      );
+    } catch (error) {
+      console.error("Error selling NFT:", error);
+    }
+  };
+
+  const handleCancelSell = (tokenId) => {
+    // Thêm logic xử lý hủy bán NFT ở đây
+    console.log(`Canceling sell for NFT with ID: ${tokenId}`);
+  };
+
   return (
     <div className="container mt-5">
       <h2>Your NFTs</h2>
@@ -95,6 +127,20 @@ const Profile = ({ walletAddress }) => {
                   <Card.Title>{nft.name}</Card.Title>
                   <Card.Text>{nft.description}</Card.Text>
                   <Card.Text>Token ID: {nft.id}</Card.Text>
+                  <div className="d-flex gap-2">
+                    <Button
+                      variant="primary"
+                      onClick={() => handleSell(nft.id)}
+                    >
+                      Sell
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => handleCancelSell(nft.id)}
+                    >
+                      Cancel sell
+                    </Button>
+                  </div>
                 </Card.Body>
               </Card>
             </Col>
