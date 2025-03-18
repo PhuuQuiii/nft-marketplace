@@ -5,14 +5,13 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol"; // giao diện chuẩ
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol"; // một cơ chế bảo vệ chống lại Reentrancy Attack (tấn công tái nhập)
 
-
 contract Marketplace is ReentrancyGuard {
-
     // Variables
     address payable public immutable feeAccount; // chủ sở hữu marketplace (admin) nhận Ether từ các giao dịch
     uint public immutable feePercent; // Phí giao dịch mà marketplace thu từ người bán
-    uint public itemCount;  //  số lượng NFT được niêm yết trên Marketplace
-    struct Item { // lưu thông tin chi tiết của NFT được niêm yết trên Marketplace
+    uint public itemCount; //  số lượng NFT được niêm yết trên Marketplace
+    struct Item {
+        // lưu thông tin chi tiết của NFT được niêm yết trên Marketplace
         uint itemId;
         IERC721 nft; // Hợp đồng NFT (IERC721) liên kết với NFT này
         uint tokenId;
@@ -49,14 +48,19 @@ contract Marketplace is ReentrancyGuard {
     }
 
     // niêm yết NFT lên Marketplace ( NFT của họ sẽ được chuyển vào Marketplace và danh sách NFT đang bán sẽ được cập nhật.)
-    function makeItem(IERC721 _nft, uint _tokenId, uint _price) external nonReentrant { // Reentrancy Attack (tấn công tái nhập)
+    function makeItem(
+        IERC721 _nft,
+        uint _tokenId,
+        uint _price
+    ) external nonReentrant {
+        // Reentrancy Attack (tấn công tái nhập)
         require(_price > 0, "Price must be greater than zero");
         // increment itemCount
-        itemCount ++;
+        itemCount++;
         // transferFrom: Gọi hàm chuyển quyền sở hữu của ERC-721 để chuyển NFT vào Marketplace.
         _nft.transferFrom(msg.sender, address(this), _tokenId); // msg.sender: Địa chỉ của người đang bán NFT // address(this): Địa chỉ của Marketplace (tức là hợp đồng Marketplace sẽ giữ NFT này) //  tokenId của NFT người bán muốn niêm yết
         // add new item to items mapping
-        items[itemCount] = Item (
+        items[itemCount] = Item(
             itemCount,
             _nft,
             _tokenId,
@@ -65,13 +69,7 @@ contract Marketplace is ReentrancyGuard {
             false // chưa bán
         );
         // emit Offered event
-        emit Offered(
-            itemCount,
-            address(_nft),
-            _tokenId,
-            _price,
-            msg.sender
-        );
+        emit Offered(itemCount, address(_nft), _tokenId, _price, msg.sender);
     }
 
     // Mua NFT trên marketplace
@@ -83,7 +81,10 @@ contract Marketplace is ReentrancyGuard {
         // Kiểm tra xem _itemId có hợp lệ hay không
         require(_itemId > 0 && _itemId <= itemCount, "item doesn't exist");
         // Kiểm tra xem người mua có gửi đủ tiền để thanh toán không
-        require(msg.value >= _totalPrice, "not enough ether to cover item price and market fee"); // msg.value là số ETH mà người gọi (addr2) gửi kèm theo.
+        require(
+            msg.value >= _totalPrice,
+            "not enough ether to cover item price and market fee"
+        ); // msg.value là số ETH mà người gọi (addr2) gửi kèm theo.
         // Kiểm tra xem NFT đã được bán hay chưa.
         require(!item.sold, "item already sold");
         // Chuyển số tiền tương ứng giá NFT cho người bán.
@@ -106,7 +107,24 @@ contract Marketplace is ReentrancyGuard {
     }
 
     // tổng giá tiền NFT cần thanh toán
-    function getTotalPrice(uint _itemId) view public returns(uint){
-        return((items[_itemId].price*(100 + feePercent))/100); // Tổng giá = Giá NFT + Phí marketplace
+    function getTotalPrice(uint _itemId) public view returns (uint) {
+        return ((items[_itemId].price * (100 + feePercent)) / 100); // Tổng giá = Giá NFT + Phí marketplace
     } // Phí là 1% của giá NFT
+
+    // Hủy niêm yết NFT
+    function cancelItem(uint _itemId) external {
+        Item storage item = items[_itemId];
+        require(
+            item.seller == msg.sender,
+            "Only the seller can cancel the item"
+        );
+        require(!item.sold, "Item already sold");
+
+        // Trả NFT về cho người bán
+        item.nft.transferFrom(address(this), msg.sender, item.tokenId);
+
+        // Xóa item khỏi danh sách
+        delete items[_itemId];
+        itemCount--; // Giảm số lượng item
+    }
 }

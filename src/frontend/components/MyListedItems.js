@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import { ethers } from "ethers";
 import { Card, Row, Col, Button } from "react-bootstrap";
-
 
 function renderSoldItems(items) {
   return (
@@ -13,7 +12,8 @@ function renderSoldItems(items) {
             <Card>
               <Card.Img variant="top" src={item.image} />
               <Card.Footer>
-                For {ethers.utils.formatEther(item.totalPrice)} ETH - Received {ethers.utils.formatEther(item.price)} ETH
+                For {ethers.utils.formatEther(item.totalPrice)} ETH - Received{" "}
+                {ethers.utils.formatEther(item.price)} ETH
               </Card.Footer>
             </Card>
           </Col>
@@ -74,6 +74,24 @@ export default function MyListedItems({ marketplace, nft, account }) {
     loadListedItems();
   }, [loadListedItems]); // Không bị lỗi dependency
 
+  const handleCancelSell = async (itemId) => {
+    try {
+      if (!marketplace) {
+        console.error("Marketplace contract is not initialized.");
+        return;
+      }
+
+      // Gọi hàm cancelItem từ hợp đồng Marketplace
+      const transaction = await marketplace.cancelItem(itemId);
+      await transaction.wait(); // Chờ giao dịch hoàn tất
+
+      console.log(`Cancelled sell for item ID: ${itemId}`);
+      loadListedItems(); // Tải lại danh sách để cập nhật
+    } catch (error) {
+      console.error("Error canceling sell:", error);
+    }
+  };
+
   if (loading) {
     return (
       <main style={{ padding: "1rem 0" }}>
@@ -81,11 +99,6 @@ export default function MyListedItems({ marketplace, nft, account }) {
       </main>
     );
   }
-
-  const handleCancelSell = (tokenId) => {
-    // Thêm logic xử lý hủy bán NFT ở đây
-    console.log(`Canceling sell for NFT with ID: ${tokenId}`);
-  };
 
   return (
     <div className="flex justify-center">
@@ -97,11 +110,13 @@ export default function MyListedItems({ marketplace, nft, account }) {
               <Col key={idx} className="overflow-hidden">
                 <Card>
                   <Card.Img variant="top" src={item.image} />
-                  <Card.Footer>{ethers.utils.formatEther(item.totalPrice)} ETH</Card.Footer>
+                  <Card.Footer>
+                    {ethers.utils.formatEther(item.totalPrice)} ETH
+                  </Card.Footer>
                   <div className="d-flex gap-2">
                     <Button
                       variant="secondary"
-                      onClick={() => handleCancelSell(nft.id)}
+                      onClick={() => handleCancelSell(item.itemId)}
                     >
                       Cancel sell
                     </Button>
