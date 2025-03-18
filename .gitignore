@@ -17,7 +17,12 @@
 .env.development.local
 .env.test.local
 .env.production.local
+.env
+/src/backend/.env
+/src/backend/api/.env
 
+/src/frontend/contractsData/NFT-address.json
+/src/frontend/contractsData/Marketplace-address.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

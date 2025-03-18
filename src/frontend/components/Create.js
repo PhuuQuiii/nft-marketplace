@@ -6,7 +6,6 @@ const Create = () => {
   const [type, setType] = useState("Quan");
   const [image, setImage] = useState("");
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
   const [attributes, setAttributes] = useState({});
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
@@ -28,9 +27,9 @@ const Create = () => {
   };
 
   const createNFT = async () => {
-    if (!type || !image || !name || !description || !attributes) return;
+    if (!type || !image || !name || !attributes) return;
     try {
-      const metadata = { type, image, name, description, attributes };
+      const metadata = { type, image, name, attributes };
       const result = await axios.post("http://localhost:4000/nft/createNFT", metadata);
       setShowSuccessToast(true);
       console.log("NFT created and listed!", result.data);

@@ -64,7 +64,6 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
               id: tokenId.toString(),
               image: imageUrl,
               name: metadata.name || `NFT #${tokenId}`,
-              description: metadata.description || "No description available",
             };
           })
         );
