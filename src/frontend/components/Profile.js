@@ -12,9 +12,11 @@ const contractABI = [
 
 console.log(process.env.REACT_APP_NFT_CONTRACT_ADDRESS);
 console.log(process.env.REACT_APP_IPFS_HOST);
-const contractAddress = process.env.REACT_APP_NFT_CONTRACT_ADDRESS; // Địa chỉ của smart contract
+// const contractAddress = process.env.REACT_APP_NFT_CONTRACT_ADDRESS; // Địa chỉ của smart contract
+const contractAddress = '0x0DF63c9798Eb7b734F6E3DB244fC8b21A9c53387'; // Địa chỉ của smart contract
 
-const ipfsGateway = process.env.REACT_APP_IPFS_HOST; // Gateway để truy cập IPFS
+// const ipfsGateway = process.env.REACT_APP_IPFS_HOST; // Gateway để truy cập IPFS
+const ipfsGateway = 'localhost'; // Gateway để truy cập IPFS
 
 const Profile = ({ walletAddress, marketplace, nft }) => {
   const [loading, setLoading] = useState(true);
