@@ -55,6 +55,18 @@ const mintNFT = async (tokenURI) => {
 };
 
 /**
+ * update tokenURI
+ * @param {number} tokenId - ID của NFT
+ */
+const updateTokenURI = async (tokenId, newTokenURI) => {
+  const signer = await getSigner();
+  const contractWithSigner = nftContract.connect(signer);
+  const tx = await contractWithSigner.updateTokenURI(tokenId, newTokenURI);
+  await tx.wait();
+  return tx;
+}
+
+/**
  * Approve NFT cho marketplace
  * @param {number} tokenId - ID của NFT
  */
@@ -90,6 +102,7 @@ const uploadMetadataToIPFS = async (metadata) => {
 
 module.exports = {
   mintNFT,
+  updateTokenURI,
   approveNFT,
   listNFT,
   uploadMetadataToIPFS,
