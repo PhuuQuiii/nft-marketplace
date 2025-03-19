@@ -15,6 +15,7 @@ exports.createNFT = async (req, res) => {
     let metadata;
     if (type === "Quan") {
       metadata = {
+        type,
         image,
         name,
         attributes: {
@@ -31,6 +32,7 @@ exports.createNFT = async (req, res) => {
       };
     } else if (type === "Điền") {
       metadata = {
+        type,
         image,
         name,
         attributes: {
@@ -66,3 +68,60 @@ exports.createNFT = async (req, res) => {
     res.status(500).json({ error: "Failed to create NFT" });
   }
 };
+
+exports.updateNFT = async (req, res) => {
+  try {
+    const { tokenId, type, image, name, attributes, price } = req.body;
+    if (!tokenId || !type || !image || !name || !attributes || !price) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    let metadata;
+    if (type === "Quan") {
+      metadata = {
+        type,
+        image,
+        name,
+        price,
+        attributes: {
+          color: attributes.color,
+          health: attributes.health,
+          attack: attributes.attack,
+          armor: attributes.armor,
+          speed: attributes.speed,
+          effect1: attributes.effect1,
+          critical: attributes.critical,
+          effect2: attributes.effect2,
+          effect3: attributes.effect3,
+        },
+      };
+    } else if (type === "Điền") {
+      metadata = {
+        type,
+        image,
+        name,
+        price,
+        attributes: {
+          info: attributes.info,
+          effect: attributes.effect,
+          stats: attributes.stats,
+        },
+      };
+    } else {
+      return res.status(400).json({ error: "Invalid NFT type" });
+    }
+
+    // Upload metadata lên IPFS
+    const ipfsHash = await nftService.uploadMetadataToIPFS(metadata);
+    const uri = `http://localhost:8080/ipfs/${ipfsHash}`;
+
+    // Update NFT
+    const updateTransaction = await nftService.updateTokenURI(tokenId, uri);
+    await updateTransaction.wait();
+
+    res.json({ message: "NFT updated successfully" });
+  } catch (error) {
+    console.error("Error updating NFT:", error);
+    res.status(500).json({ error: "Failed to update NFT" });
+  }
+}
