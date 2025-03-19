@@ -8,6 +8,7 @@ contract NFT is ERC721URIStorage {
 
     // Thêm sự kiện Minted
     event Minted(uint indexed tokenId, address indexed owner, string tokenURI);
+    event TokenURIUpdated(uint indexed tokenId, string newTokenURI);
 
     constructor() ERC721("DApp NFT", "DAPP") {} //  DApp NFT → Tên của bộ sưu tập NFT, DAPP → Mã token (symbol) của NFT.
 
@@ -33,6 +34,11 @@ contract NFT is ERC721URIStorage {
         return ownedTokens;
     }
 
+    function updateTokenURI(uint tokenId, string memory newTokenURI) external {
+        require(ownerOf(tokenId) == msg.sender, "You are not the owner");
+        _setTokenURI(tokenId, newTokenURI);
+        emit TokenURIUpdated(tokenId, newTokenURI);
+    }
     // function tokensOfOwner(address owner) external view returns (uint[] memory) {
     //     uint tokenCount = balanceOf(owner);
     //     uint[] memory tokenIds = new uint[](tokenCount);

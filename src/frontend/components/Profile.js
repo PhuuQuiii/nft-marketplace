@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Card, Row, Col, Spinner, Alert, Button } from "react-bootstrap";
 import { ethers } from "ethers";
+import axios from "axios";
 
 // ABI của smart contract (rút gọn chỉ giữ các hàm cần thiết)
 const contractABI = [
   "function getOwnedNFTs(address owner) external view returns (uint[] memory)",
   "function tokenURI(uint tokenId) external view returns (string memory)",
+  "function updateTokenURI(uint tokenId, string calldata newTokenURI) external",
 ];
 
 console.log(process.env.REACT_APP_NFT_CONTRACT_ADDRESS);
@@ -91,6 +93,27 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
       // Đặt giá cho NFT (giá này có thể được lấy từ một input hoặc giá mặc định)
       const price = prompt("Enter price in ETH for the NFT:"); // Yêu cầu người dùng nhập giá
       if (!price) return;
+
+      const tokenUri = await nft.tokenURI(tokenId);
+      const ipfsUrl = tokenUri.replace("ipfs://", ipfsGateway);
+      const metadataRes = await fetch(ipfsUrl);
+      const data = await metadataRes.json();
+      const metadata = {
+        type: data.type,
+        image: data.image, 
+        name: data.name, 
+        attributes: data.attributes, 
+        price: data.price,
+        tokenId: tokenId
+      };
+
+      console.log(metadata);
+
+      metadata.price =price;
+
+      const result = await axios.post("http://localhost:4000/nft/updateNFT", metadata);
+      console.log(result);
+
 
       // Niêm yết NFT trên marketplace
       const listingPrice = ethers.utils.parseEther(price.toString());

@@ -28,6 +28,20 @@
   color: #61dafb;
 }
 
+@font-face {
+  font-family: 'DePixel';
+  src: url('/public/assets/fonts/SVN-Coder Crux.otf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'DePixel';
+  src: url('/public/assets/fonts/SVN-Coder Crux.otf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

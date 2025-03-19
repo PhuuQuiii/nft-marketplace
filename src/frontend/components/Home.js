@@ -30,13 +30,14 @@ const Home = ({ marketplace, nft }) => {
           const metadata = await response.json();
           const totalPrice = await marketplace.getTotalPrice(item.itemId);
 
+          console.log(metadata);
           items.push({
             totalPrice,
             itemId: item.itemId,
             seller: item.seller,
             name: metadata.name,
-            description: metadata.description,
             image: metadata.image,
+            attributes: metadata.attributes,
           });
         }
       }
@@ -85,6 +86,18 @@ const Home = ({ marketplace, nft }) => {
                   <Card.Body color="secondary">
                     <Card.Title>{item.name}</Card.Title>
                     <Card.Text>{item.description}</Card.Text>
+                  {Object.keys(item.attributes).length > 0 && (
+                    <div>
+                      <h6>Attributes:</h6>
+                      <ul className="list-unstyled">
+                        {Object.entries(item.attributes).map(([key, value], index) => (
+                          <li key={index}>
+                            {key}: {value}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   </Card.Body>
                   <Card.Footer>
                     <div className="d-grid">

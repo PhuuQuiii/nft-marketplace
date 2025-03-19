@@ -37,6 +37,9 @@ module.exports = async function (callback) {
     saveFrontendFiles(nft, "NFT");
     saveFrontendFiles(marketplace, "Marketplace");
 
+    // Cập nhật địa chỉ hợp đồng vào file .env
+    updateEnvFile(nft.address, marketplace.address);
+
     callback(); // Kết thúc script
   } catch (error) {
     console.error(error);

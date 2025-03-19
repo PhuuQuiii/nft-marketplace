@@ -11,6 +11,20 @@ function renderSoldItems(items) {
           <Col key={idx} className="overflow-hidden">
             <Card>
               <Card.Img variant="top" src={item.image} />
+              <Card.Body>
+              {Object.keys(item.attributes).length > 0 && (
+                <div>
+                  <h6>Attributes:</h6>
+                  <ul className="list-unstyled">
+                    {Object.entries(item.attributes).map(([key, value], index) => (
+                      <li key={index}>
+                        {key}: {value}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              </Card.Body>
               <Card.Footer>
                 For {ethers.utils.formatEther(item.totalPrice)} ETH - Received{" "}
                 {ethers.utils.formatEther(item.price)} ETH
@@ -54,6 +68,7 @@ export default function MyListedItems({ marketplace, nft, account }) {
             name: metadata.name,
             description: metadata.description,
             image: metadata.image,
+            attributes: metadata.attributes,
           };
 
           listedItems.push(item);
@@ -110,10 +125,24 @@ export default function MyListedItems({ marketplace, nft, account }) {
               <Col key={idx} className="overflow-hidden">
                 <Card>
                   <Card.Img variant="top" src={item.image} />
+                  <Card.Body>
+                    {Object.keys(item.attributes).length > 0 && (
+                      <div>
+                        <h6>Attributes:</h6>
+                        <ul className="list-unstyled">
+                          {Object.entries(item.attributes).map(([key, value], index) => (
+                            <li key={index}>
+                              {key}: {value}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </Card.Body>
                   <Card.Footer>
                     {ethers.utils.formatEther(item.totalPrice)} ETH
                   </Card.Footer>
-                  <div className="d-flex gap-2">
+                  <div className="d-flex justify-content-center gap-2">
                     <Button
                       variant="secondary"
                       onClick={() => handleCancelSell(item.itemId)}

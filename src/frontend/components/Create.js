@@ -39,7 +39,7 @@ const Create = () => {
   };
 
   return (
-    <div className="container-fluid mt-5">
+    <div style={{fontFamily: 'DePixel, sans-serif'}} className="container-fluid mt-5">
       <div className="row">
         <main role="main" className="col-lg-12 mx-auto" style={{ maxWidth: "1000px" }}>
           <div className="content mx-auto">
