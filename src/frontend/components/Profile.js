@@ -12,11 +12,15 @@ const contractABI = [
 
 console.log(process.env.REACT_APP_NFT_CONTRACT_ADDRESS);
 console.log(process.env.REACT_APP_IPFS_HOST);
-// const contractAddress = process.env.REACT_APP_NFT_CONTRACT_ADDRESS; // Địa chỉ của smart contract
-const contractAddress = '0x0DF63c9798Eb7b734F6E3DB244fC8b21A9c53387'; // Địa chỉ của smart contract
+const contractAddress = process.env.REACT_APP_NFT_CONTRACT_ADDRESS; // Địa chỉ của smart contract
+// const contractAddress = '0xC9BFe53156baFC37D44d7FCbe08703E39F732D71'; // Địa chỉ của smart contract
 
 // const ipfsGateway = process.env.REACT_APP_IPFS_HOST; // Gateway để truy cập IPFS
+// const ipfsGateway = 'localhost'; // Gateway để truy cập IPFS
 const ipfsGateway = 'localhost'; // Gateway để truy cập IPFS
+
+console.log("Contract Address:", process.env.REACT_APP_NFT_CONTRACT_ADDRESS);
+console.log("IPFS Host:", process.env.REACT_APP_IPFS_HOST);
 
 const Profile = ({ walletAddress, marketplace, nft }) => {
   const [loading, setLoading] = useState(true);
@@ -42,9 +46,11 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
           provider
         );
 
+        console.log("contract", contract);
+
         // Lấy danh sách NFT ID của user
         const tokenIds = await contract.getOwnedNFTs(walletAddress);
-        console.log(tokenIds);
+        console.log("tokenIds", tokenIds);
         if (tokenIds.length === 0) {
           setNfts([]);
           setLoading(false);
@@ -55,8 +61,9 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
         const nftData = await Promise.all(
           tokenIds.map(async (tokenId) => {
             const tokenUri = await contract.tokenURI(tokenId);
+            console.log("tokenUri", tokenUri);
             const ipfsUrl = tokenUri.replace("ipfs://", ipfsGateway); // Chuyển IPFS URI thành HTTP URL
-
+            console.log("ipfsUrl", ipfsUrl);
             // Gọi API để lấy metadata JSON từ IPFS
             const metadataRes = await fetch(ipfsUrl);
             const metadata = await metadataRes.json();
@@ -87,7 +94,7 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
   }, [walletAddress]);
 
   const handleSell = async (tokenId) => {
-    console.log(tokenId)
+    console.log(tokenId);
     try {
       // Cấp quyền cho marketplace quản lý NFT
       await (await nft.setApprovalForAll(marketplace.address, true)).wait();
@@ -102,20 +109,22 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
       const data = await metadataRes.json();
       const metadata = {
         type: data.type,
-        image: data.image, 
-        name: data.name, 
-        attributes: data.attributes, 
+        image: data.image,
+        name: data.name,
+        attributes: data.attributes,
         price: data.price,
-        tokenId: tokenId
+        tokenId: tokenId,
       };
 
       console.log(metadata);
 
-      metadata.price =price;
+      metadata.price = price;
 
-      const result = await axios.post("http://localhost:4000/nft/updateNFT", metadata);
+      const result = await axios.post(
+        "http://localhost:4000/nft/updateNFT",
+        metadata
+      );
       console.log(result);
-
 
       // Niêm yết NFT trên marketplace
       const listingPrice = ethers.utils.parseEther(price.toString());
@@ -153,11 +162,13 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
                     <div>
                       <h6>Attributes:</h6>
                       <ul className="list-unstyled">
-                        {Object.entries(nft.attributes).map(([key, value], index) => (
-                          <li key={index}>
-                            {key}: {value}
-                          </li>
-                        ))}
+                        {Object.entries(nft.attributes).map(
+                          ([key, value], index) => (
+                            <li key={index}>
+                              {key}: {value}
+                            </li>
+                          )
+                        )}
                       </ul>
                     </div>
                   )}

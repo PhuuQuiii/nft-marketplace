@@ -124,4 +124,35 @@ exports.updateNFT = async (req, res) => {
     console.error("Error updating NFT:", error);
     res.status(500).json({ error: "Failed to update NFT" });
   }
-}
+};
+
+/**
+ * Lấy danh sách NFT ID của người dùng
+ * @param {object} req - Đối tượng yêu cầu
+ * @param {object} res - Đối tượng phản hồi
+ */
+exports.getOwnedNFTs = async (req, res) => {
+  try {
+    const owner = req.params.owner; // Lấy địa chỉ ví từ tham số URL
+    if (!owner) {
+      return res.status(400).json({ error: "Missing owner address" });
+    }
+
+    // Gọi hàm từ nftService để lấy danh sách NFT ID
+    const tokenIds = await nftService.getOwnedNFTs(owner);
+
+    // Lấy token URI cho từng token ID và chuyển đổi sang ipfsUrl
+    const ipfsUrls = await Promise.all(
+      tokenIds.map(async (tokenId) => {
+        const tokenUri = await nftService.nftContract.tokenURI(tokenId); // Lấy token URI từ smart contract
+        const ipfsUrl = tokenUri.replace("ipfs://", process.env.IPFS_GATEWAY); // Chuyển đổi IPFS URI thành HTTP URL
+        return ipfsUrl; // Trả về ipfsUrl
+      })
+    );
+
+    res.json({ tokenIds, ipfsUrls }); // Trả về danh sách NFT ID và ipfsUrl
+  } catch (error) {
+    console.error("Error fetching owned NFTs:", error);
+    res.status(500).json({ error: "Failed to fetch owned NFTs" });
+  }
+};

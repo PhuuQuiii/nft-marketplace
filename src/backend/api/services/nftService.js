@@ -5,7 +5,7 @@ const { provider, getSigner } = require("../utils/web3Provider");
 const config = require("../utils/config");
 const { create: ipfsHttpClient } = require("ipfs-http-client"); // Import IPFS client
 require("dotenv").config(); // Load biến môi trường từ .env
-const axios = require('axios');
+const axios = require("axios");
 
 // Load ABI của NFT contract
 const NFT_ABI = JSON.parse(
@@ -28,7 +28,11 @@ const MARKETPLACE_ADDRESS = config.MARKETPLACE_CONTRACT_ADDRESS;
 const nftContract = new ethers.Contract(NFT_ADDRESS, NFT_ABI, provider);
 
 // Tạo instance của contract Marketplace
-const marketplaceContract = new ethers.Contract(MARKETPLACE_ADDRESS, MARKETPLACE_ABI, provider);
+const marketplaceContract = new ethers.Contract(
+  MARKETPLACE_ADDRESS,
+  MARKETPLACE_ABI,
+  provider
+);
 
 // Lấy thông tin IPFS từ .env
 const IPFS_HOST = process.env.IPFS_HOST || "localhost";
@@ -64,7 +68,7 @@ const updateTokenURI = async (tokenId, newTokenURI) => {
   const tx = await contractWithSigner.updateTokenURI(tokenId, newTokenURI);
   await tx.wait();
   return tx;
-}
+};
 
 /**
  * Approve NFT cho marketplace
@@ -100,10 +104,21 @@ const uploadMetadataToIPFS = async (metadata) => {
   return result.path;
 };
 
+/**
+ * Lấy danh sách NFT ID của người dùng
+ * @param {string} owner - Địa chỉ ví của người dùng
+ */
+const getOwnedNFTs = async (owner) => {
+  const tokenIds = await nftContract.getOwnedNFTs(owner);
+  return tokenIds.map((tokenId) => tokenId); // Chuyển đổi BigNumber sang chuỗi
+};
+
 module.exports = {
   mintNFT,
   updateTokenURI,
   approveNFT,
   listNFT,
   uploadMetadataToIPFS,
+  getOwnedNFTs,
+  nftContract,
 };
