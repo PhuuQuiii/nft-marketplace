@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ethers } from "ethers"
-import { Row, Col, Card } from 'react-bootstrap'
+import { Row, Col, Modal } from 'react-bootstrap'
 
 export default function MyPurchases({ marketplace, nft, account }) {
   const [loading, setLoading] = useState(true)
   const [purchases, setPurchases] = useState([])
+  const [showModal, setShowModal] = useState(false)
+  const [selectedItem, setSelectedItem] = useState(null)
 
   const loadPurchasedItems = useCallback(async () => {
     try {
@@ -52,6 +54,15 @@ export default function MyPurchases({ marketplace, nft, account }) {
     </main>
   )
 
+  const handleShowModal = (item) => {
+    setSelectedItem(item)
+    setShowModal(true)
+  }
+
+  const handleCloseModal = () => {
+    setShowModal(false)
+  }
+
   return (
     <div className="flex justify-center">
       {purchases.length > 0 ? (
@@ -59,32 +70,72 @@ export default function MyPurchases({ marketplace, nft, account }) {
           <Row xs={1} md={2} lg={4} className="g-4 py-5">
             {purchases.map((item, idx) => (
               <Col key={idx} className="overflow-hidden">
-                <Card>
-                  <Card.Img variant="top" src={item.image} />
-                  <Card.Body>
-                    {Object.keys(item.attributes).length > 0 && (
-                      <div>
-                        <h6>Attributes:</h6>
-                        <ul className="list-unstyled">
-                          {Object.entries(item.attributes).map(([key, value], index) => (
-                            <li key={index}>
-                              {key}: {value}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </Card.Body>
-                  <Card.Footer>{ethers.utils.formatEther(item.totalPrice)} ETH</Card.Footer>
-                </Card>
+                <div className="pixel-box">
+                  <div className="pixel-box-inner">
+                    <div className="pixel-box-header">
+                      <h1>{item.name}</h1>
+                    </div>
+                    <div>
+                      <img
+                        style={{
+                          width: '95%',
+                          height: '95%',
+                          backgroundColor: 'lightblue',
+                          clipPath: 'polygon(0 10px, 10px 10px, 10px 0, calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px))'
+                        }}
+                        src={item.image}
+                        alt={item.name}
+                        onClick={() => handleShowModal(item)}
+                      />
+                      <div>{ethers.utils.formatEther(item.totalPrice)} ETH</div>
+                    </div>
+                  </div>
+                </div>
               </Col>
             ))}
           </Row>
         </div>
       ) : (
         <main style={{ padding: "1rem 0" }}>
-          <h2>No purchases</h2>
+          <h2 style={{ color: 'black', fontSize: '58px' }}>No purchases</h2>
         </main>
+      )}
+      {selectedItem && (
+        <Modal className="custom-modal" show={showModal} onHide={handleCloseModal}>
+          <div className="pixel-box">
+            <Modal.Header className="border-0 pb-0" closeButton></Modal.Header>
+            <div className="pixel-box-inner">
+              <Modal.Body>
+                <div className="row">
+                  <div className="col-md-4 d-flex flex-column justify-content-center align-items-center">
+                    <h1>{selectedItem.name}</h1>
+                    <img
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        backgroundColor: 'lightblue',
+                        clipPath: 'polygon(0 10px, 10px 10px, 10px 0, calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px))'
+                      }}
+                      src={selectedItem.image}
+                      alt={selectedItem.name}
+                    />
+                  </div>
+                  <div className="col-md-7">
+                    <h1>Attributes:</h1>
+                    <ul className="attributes-grid">
+                      {Object.entries(selectedItem.attributes).map(([key, value], index) => (
+                        <li key={index}>
+                          <span className="attribute-key">{key}:</span>
+                          <span className="attribute-value">{value}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </Modal.Body>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   )

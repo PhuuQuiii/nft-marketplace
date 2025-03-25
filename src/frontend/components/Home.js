@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
-import { Row, Col, Card, Button } from 'react-bootstrap';
+import { Row, Col, Button, Modal } from 'react-bootstrap';
+import './App.css';
 
 const Home = ({ marketplace, nft }) => {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
+  const [showModal, setShowModal] = useState(false); // Modal state
+  const [selectedItem, setSelectedItem] = useState(null); // Store the selected item for modal display
 
   const loadMarketplaceItems = useCallback(async () => {
     try {
@@ -30,7 +33,6 @@ const Home = ({ marketplace, nft }) => {
           const metadata = await response.json();
           const totalPrice = await marketplace.getTotalPrice(item.itemId);
 
-          console.log(metadata);
           items.push({
             totalPrice,
             itemId: item.itemId,
@@ -38,6 +40,7 @@ const Home = ({ marketplace, nft }) => {
             name: metadata.name,
             image: metadata.image,
             attributes: metadata.attributes,
+            description: metadata.description,
           });
         }
       }
@@ -47,7 +50,7 @@ const Home = ({ marketplace, nft }) => {
     } catch (error) {
       console.error('Error loading marketplace items:', error);
     }
-  }, [marketplace, nft]); // Chỉ gọi lại khi `marketplace` hoặc `nft` thay đổi
+  }, [marketplace, nft]);
 
   const buyMarketItem = async (item) => {
     try {
@@ -63,9 +66,18 @@ const Home = ({ marketplace, nft }) => {
     }
   };
 
+  const handleShowModal = (item) => {
+    setSelectedItem(item);  // Store the selected item
+    setShowModal(true); // Show modal
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+  
   useEffect(() => {
     loadMarketplaceItems();
-  }, [loadMarketplaceItems]); // Sử dụng `useCallback` nên không bị thay đổi mỗi lần render
+  }, [loadMarketplaceItems]);
 
   if (loading)
     return (
@@ -81,32 +93,28 @@ const Home = ({ marketplace, nft }) => {
           <Row xs={1} md={2} lg={4} className="g-4 py-5">
             {items.map((item, idx) => (
               <Col key={idx} className="overflow-hidden">
-                <Card>
-                  <Card.Img variant="top" src={item.image} />
-                  <Card.Body color="secondary">
-                    <Card.Title>{item.name}</Card.Title>
-                    <Card.Text>{item.description}</Card.Text>
-                  {Object.keys(item.attributes).length > 0 && (
+                <div className='pixel-box'>
+                  <div className='pixel-box-inner'>
+                    <div className='pixel-box-header'>
+                      <h1>{item.name}</h1>
+                    </div>
                     <div>
-                      <h6>Attributes:</h6>
-                      <ul className="list-unstyled">
-                        {Object.entries(item.attributes).map(([key, value], index) => (
-                          <li key={index}>
-                            {key}: {value}
-                          </li>
-                        ))}
-                      </ul>
+                      <img
+                        style={{
+                          width: '95%',
+                          height: '95%',
+                          backgroundColor: 'lightblue',
+                          clipPath: 'polygon(0 10px, 10px 10px, 10px 0, calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px))'
+                        }}
+                        src={item.image} alt={item.name} 
+                        onClick={() => handleShowModal(item)} // On click, show modal with item details
+                      />
                     </div>
-                  )}
-                  </Card.Body>
-                  <Card.Footer>
-                    <div className="d-grid">
-                      <Button onClick={() => buyMarketItem(item)} variant="primary" size="lg">
-                        Buy for {ethers.utils.formatEther(item.totalPrice)} ETH
-                      </Button>
-                    </div>
-                  </Card.Footer>
-                </Card>
+                    <Button className="btn-pixel border-0 mt-3" onClick={() => buyMarketItem(item)}>
+                      Buy for {ethers.utils.formatEther(item.totalPrice)} ETH
+                    </Button>
+                  </div>
+                </div>
               </Col>
             ))}
           </Row>
@@ -116,6 +124,52 @@ const Home = ({ marketplace, nft }) => {
           <h2>No listed assets</h2>
         </main>
       )}
+
+      {/* Modal Component */}
+      {selectedItem && (
+      <Modal className='custom-modal' show={showModal} onHide={handleCloseModal}>
+        <div className='pixel-box'>
+          <Modal.Header className="border-0 pb-0" closeButton></Modal.Header>
+          <div className='pixel-box-inner'>
+            <Modal.Body>
+              <div className='row'>
+                {/* Cột hiển thị ảnh */}
+                <div className='col-md-4 d-flex flex-column	 justify-content-center align-items-center'>
+                  <h1>{selectedItem.name}</h1>
+                  <img
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      backgroundColor: 'lightblue',
+                      clipPath: 'polygon(0 10px, 10px 10px, 10px 0, calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px))'
+                    }}
+                    src={selectedItem.image} 
+                    alt={selectedItem.name} 
+                  />
+                </div>
+                {/* Cột hiển thị nội dung */}
+                <div className='col-md-7'>
+                  <h1>Attributes:</h1>
+                  <ul className="attributes-grid">
+                    {Object.entries(selectedItem.attributes).map(([key, value], index) => (
+                      <li key={index}>
+                        <span className="attribute-key">{key}:</span> 
+                        <span className="attribute-value">{value}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </Modal.Body>
+            <Modal.Footer className='border-0 justify-content-center'>
+              <Button className='btn-pixel border-0' onClick={() => buyMarketItem(selectedItem)}>
+                Buy for {ethers.utils.formatEther(selectedItem.totalPrice)} ETH
+              </Button>
+            </Modal.Footer>
+          </div>
+        </div>
+      </Modal>
+    )}
     </div>
   );
 };

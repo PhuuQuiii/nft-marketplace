@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Row, Col, Spinner, Alert, Button } from "react-bootstrap";
+import { Card, Row, Col, Spinner, Alert, Button, Modal } from "react-bootstrap";
 import { ethers } from "ethers";
 import axios from "axios";
 
@@ -13,19 +13,17 @@ const contractABI = [
 console.log(process.env.REACT_APP_NFT_CONTRACT_ADDRESS);
 console.log(process.env.REACT_APP_IPFS_HOST);
 const contractAddress = process.env.REACT_APP_NFT_CONTRACT_ADDRESS; // Địa chỉ của smart contract
-// const contractAddress = '0xC9BFe53156baFC37D44d7FCbe08703E39F732D71'; // Địa chỉ của smart contract
+//const contractAddress = '0x0DF63c9798Eb7b734F6E3DB244fC8b21A9c53387'; // Địa chỉ của smart contract
 
-// const ipfsGateway = process.env.REACT_APP_IPFS_HOST; // Gateway để truy cập IPFS
-// const ipfsGateway = 'localhost'; // Gateway để truy cập IPFS
-const ipfsGateway = 'localhost'; // Gateway để truy cập IPFS
-
-console.log("Contract Address:", process.env.REACT_APP_NFT_CONTRACT_ADDRESS);
-console.log("IPFS Host:", process.env.REACT_APP_IPFS_HOST);
+const ipfsGateway = process.env.REACT_APP_IPFS_HOST; // Gateway để truy cập IPFS
+//const ipfsGateway = 'localhost'; // Gateway để truy cập IPFS
 
 const Profile = ({ walletAddress, marketplace, nft }) => {
   const [loading, setLoading] = useState(true);
   const [nfts, setNfts] = useState([]);
   const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     const fetchNFTs = async () => {
@@ -93,6 +91,15 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
     fetchNFTs();
   }, [walletAddress]);
 
+  const handleShowModal = (nft) => {
+    setSelectedItem(nft); // Lưu thông tin NFT được chọn
+    setShowModal(true); // Hiển thị modal
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false); // Ẩn modal
+  };
+
   const handleSell = async (tokenId) => {
     console.log(tokenId);
     try {
@@ -142,50 +149,87 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
 
   return (
     <div className="container mt-5">
-      <h2>Your NFTs</h2>
+      <h2 style={{ color: 'black', fontSize: '58px' }}>Your NFTs</h2>
       {error && <Alert variant="danger">{error}</Alert>}
       {loading ? (
         <Spinner animation="border" />
       ) : nfts.length === 0 ? (
-        <p>No NFTs found</p>
+        <p style={{ color: 'black', fontSize: '48px' }}>No NFTs found</p>
       ) : (
-        <Row>
+        <Row xs={1} md={2} lg={4} className="g-4 py-5">
           {nfts.map((nft) => (
-            <Col key={nft.id} md={4} className="mb-4">
-              <Card>
-                <Card.Img variant="top" src={nft.image} alt={`NFT ${nft.id}`} />
-                <Card.Body>
-                  <Card.Title>{nft.name}</Card.Title>
-                  <Card.Text>{nft.description}</Card.Text>
-                  <Card.Text>Token ID: {nft.id}</Card.Text>
-                  {Object.keys(nft.attributes).length > 0 && (
-                    <div>
-                      <h6>Attributes:</h6>
-                      <ul className="list-unstyled">
-                        {Object.entries(nft.attributes).map(
-                          ([key, value], index) => (
-                            <li key={index}>
-                              {key}: {value}
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  )}
-                  <div className="d-flex gap-2">
-                    <Button
-                      variant="primary"
-                      onClick={() => handleSell(nft.id)}
-                    >
-                      Sell
-                    </Button>
+            <Col key={nft.id} className="overflow-hidden">
+              <div className='pixel-box'>
+                <div className='pixel-box-inner'>
+                  <div className='pixel-box-header'>
+                    <h1>{nft.name}</h1>
                   </div>
-                </Card.Body>
-              </Card>
+                  <div>
+                    <img
+                      style={{
+                        width: '95%',
+                        height: '95%',
+                        backgroundColor: 'lightblue',
+                        clipPath: 'polygon(0 10px, 10px 10px, 10px 0, calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px))'
+                      }}
+                      src={nft.image} alt={nft.name} 
+                      onClick={() => handleShowModal(nft)} // On click, show modal with item details
+                    />
+                  </div>
+                  <Button className="btn-pixel border-0 mt-3" onClick={() => handleSell(nft.id)}>
+                    Sell
+                  </Button>
+                </div>
+              </div>
             </Col>
           ))}
         </Row>
       )}
+
+    {selectedItem && (
+      <Modal className='custom-modal' show={showModal} onHide={handleCloseModal}>
+        <div className='pixel-box'>
+          <Modal.Header className="border-0 pb-0" closeButton></Modal.Header>
+          <div className='pixel-box-inner'>
+            <Modal.Body>
+              <div className='row'>
+                {/* Cột hiển thị ảnh */}
+                <div className='col-md-4 d-flex flex-column	 justify-content-center align-items-center'>
+                  <h1>{selectedItem.name}</h1>
+                  <img
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      backgroundColor: 'lightblue',
+                      clipPath: 'polygon(0 10px, 10px 10px, 10px 0, calc(100% - 10px) 0, calc(100% - 10px) 10px, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 10px calc(100% - 10px), 0 calc(100% - 10px))'
+                    }}
+                    src={selectedItem.image} 
+                    alt={selectedItem.name} 
+                  />
+                </div>
+                {/* Cột hiển thị nội dung */}
+                <div className='col-md-7'>
+                  <h1>Attributes:</h1>
+                  <ul className="attributes-grid">
+                    {Object.entries(selectedItem.attributes).map(([key, value], index) => (
+                      <li key={index}>
+                        <span className="attribute-key">{key}:</span> 
+                        <span className="attribute-value">{value}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </Modal.Body>
+            <Modal.Footer className='border-0 justify-content-center'>
+              <Button className="btn-pixel border-0 mt-3" onClick={() => handleSell(nft.id)}>
+                Sell
+              </Button>
+            </Modal.Footer>
+          </div>
+        </div>
+      </Modal>
+    )}
     </div>
   );
 };

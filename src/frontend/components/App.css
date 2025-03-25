@@ -1,5 +1,8 @@
 .App {
   text-align: center;
+  background-color: #222044;
+  font-size: 28px;
+  min-height: 100vh;
 }
 
 .App-logo {
@@ -14,7 +17,7 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #622aff;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -27,6 +30,119 @@
 .App-link {
   color: #61dafb;
 }
+
+.header {
+  background-color: #622aff;
+  padding: 10px 20px; /* Padding cho Navbar */
+  position: sticky; /* Giữ navbar khi cuộn */
+  top: 0; /* Đảm bảo nó dính vào đầu trang */
+  z-index: 1000; 
+}
+
+.btn-pixel{
+  display: inline-block;
+  font-size: 28px;
+  position: relative;
+  padding: 0px 20px;
+  background-color: #E3FF37;
+  color: #28248C;
+  clip-path: polygon(0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px));
+  box-shadow: inset -4px -4px 0px rgba(0, 0, 0, 0.2), inset 4px 4px 0px rgba(255, 255, 255, 0.2);
+}
+.btn-pixel:hover{
+  color: #000000;
+  background-color: #0b5ed7;
+  box-shadow: inset -4px -4px 0px rgba(0, 0, 0, 0.2), inset 4px 4px 0px rgba(255, 255, 255, 0.2);
+}
+.btn-pixel:focus{
+  color: #000000;
+  background-color: #0b5ed7;
+  box-shadow: inset 4px 4px 0px rgba(0, 0, 0, 0.2), inset -4px -4px 0px rgba(255, 255, 255, 0.2);
+}
+.btn-pixel:active{
+  color: #000000;
+  background-color: #0b5ed7;
+  box-shadow: inset 4px 4px 0px rgba(0, 0, 0, 0.2), inset -4px -4px 0px rgba(255, 255, 255, 0.2);
+}
+
+.pixel-box{
+  background-color: #ed47a4;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  position: relative;
+  box-sizing: border-box;
+  clip-path: polygon(0 16px, 16px 16px, 16px 0, calc(100% - 16px) 0, calc(100% - 16px) 16px, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) calc(100% - 16px), calc(100% - 16px) 100%, 16px 100%, 16px calc(100% - 16px), 0 calc(100% - 16px));
+  box-shadow: inset -8px -8px 0px rgba(0, 0, 0, 0.2);
+}
+.pixel-box::before{
+  content: "";
+  position: absolute;
+  width: calc(100% - 24px);
+  height: calc(100% - 24px);
+  box-shadow: inset 8px 8px 0 rgba(255, 255, 255, 0.2);
+}
+
+.pixel-box-inner{
+  padding: 20px;
+}
+.pixel-box-inner::before{
+  content: "";
+  width: 16px;
+  height: 16px;
+  background-color: rgba(255, 255, 255, 0.2);
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
+/* Ẩn thuộc tính mặc định */
+.item-attributes {
+  display: none;
+  transition: all 0.3s ease;
+}
+
+/* Hiển thị thuộc tính khi hover vào item */
+.pixel-box:hover .item-attributes {
+  display: block;
+}
+
+.custom-modal .modal-dialog {
+  max-width: 800px;
+}
+
+.custom-modal .modal-content {
+  background-color: transparent;
+  border: none; /* Nếu muốn loại bỏ viền */
+  font-family: 'DePixel', sans-serif;
+}
+
+.custom-modal .modal-header {
+  font-size: 28px;
+}
+
+.custom-modal .modal-title {
+  font-size: 40px;
+  justify-items: center;
+}
+
+.custom-modal .modal-body{
+  padding: 0px;
+}
+
+.attributes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Chia thành 2 cột */
+  gap: 10px 20px; /* Khoảng cách giữa hàng và cột */
+  font-size: 28px;  
+}
+
+.attributes-grid li {
+  display: flex;
+  justify-content: space-between; /* Căn đều giữa key và value */
+  white-space: nowrap; /* Tránh xuống dòng */
+}
+
 
 @font-face {
   font-family: 'DePixel';

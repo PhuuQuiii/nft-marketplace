@@ -75,8 +75,8 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
-      <div className="App">
+    <BrowserRouter >
+      <div style={{fontFamily: 'DePixel, sans-serif'}} className="App">
         <>
           <Navigation web3Handler={web3Handler} account={account} />
         </>
@@ -87,7 +87,7 @@ function App() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                minHeight: "80vh",
+                minHeight: "100vh",
               }}
             >
               <Spinner animation="border" style={{ display: "flex" }} />
