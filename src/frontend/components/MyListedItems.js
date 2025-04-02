@@ -17,7 +17,7 @@ const RenderSoldItems = ({ items }) => {
   };
 
   return (
-    <>
+    <div className="px-5 py-3 container">
       <h2 style={{ color: 'black', fontSize: '58px' }}>Sold</h2>
       <Row xs={1} md={2} lg={4} className="g-4 py-3">
         {items.map((item, idx) => (
@@ -84,7 +84,7 @@ const RenderSoldItems = ({ items }) => {
           </div>
         </Modal>
       )}
-    </>
+    </div>
   );
 };
 
@@ -125,13 +125,15 @@ export default function MyListedItems({ marketplace, nft, account }) {
             attributes: metadata.attributes,
           };
 
-          listedItems.push(item);
-          if (i.sold) soldItems.push(item);
+          if (i.sold){
+            soldItems.push(item);
+          } else {
+            listedItems.push(item);
+          }  
         }
       }
-
-      setListedItems(listedItems);
       setSoldItems(soldItems);
+      setListedItems(listedItems);
       setLoading(false);
     } catch (error) {
       console.error("Error loading listed items:", error);
@@ -141,6 +143,9 @@ export default function MyListedItems({ marketplace, nft, account }) {
 
   useEffect(() => {
     loadListedItems();
+    console.log("listed items: ", listedItems);
+    console.log("sold items: ", soldItems);
+
   }, [loadListedItems]); // Không bị lỗi dependency
 
   const handleCancelSell = async (itemId) => {
@@ -214,14 +219,21 @@ export default function MyListedItems({ marketplace, nft, account }) {
               </Col>
             ))}
           </Row>
-          {soldItems.length > 0 && <RenderSoldItems items={soldItems} />}
           </div>
       ) : (
         <main style={{ padding: "1rem 0" }}>
           <h2 style={{ color: 'black', fontSize: '58px'}}>No listed assets</h2>
         </main>
-      )}
-
+      )
+      }
+          {soldItems.length > 0 ? (
+            console.log("sold: ", soldItems),
+            <RenderSoldItems items={soldItems} />
+          ) :
+            (
+              console.log("No sold items")
+          )
+          }
 {selectedItem && (
       <Modal className='custom-modal' show={showModal} onHide={handleCloseModal}>
         <div className='pixel-box'>
