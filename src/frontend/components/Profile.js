@@ -105,8 +105,6 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
     try {
       // Cấp quyền cho marketplace quản lý NFT
       await (await nft.setApprovalForAll(marketplace.address, true)).wait();
-
-      // Đặt giá cho NFT (giá này có thể được lấy từ một input hoặc giá mặc định)
       const price = prompt("Enter price in ETH for the NFT:"); // Yêu cầu người dùng nhập giá
       if (!price) return;
 
@@ -121,6 +119,7 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
         attributes: data.attributes,
         price: data.price,
         tokenId: tokenId,
+        wallet: walletAddress, // Địa chỉ ví của người dùng
       };
 
       console.log(metadata);
@@ -208,7 +207,7 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
                   />
                 </div>
                 {/* Cột hiển thị nội dung */}
-                <div className='col-md-7'>
+                <div className='col-md-8'>
                   <h1>Attributes:</h1>
                   <ul className="attributes-grid">
                     {Object.entries(selectedItem.attributes).map(([key, value], index) => (

@@ -42,6 +42,7 @@ const Home = ({ marketplace, nft }) => {
             attributes: metadata.attributes,
             description: metadata.description,
           });
+          
         }
       }
 

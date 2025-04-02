@@ -9,4 +9,10 @@ async function getSigner() {
   return provider.getSigner(accounts[0]); // Lấy signer từ tài khoản đầu tiên của Ganache
 }
 
-module.exports = { provider, getSigner };
+async function getSignerByAddress(address) {
+  const accounts = await provider.listAccounts();
+  const signer = provider.getSigner(address);
+  return signer;
+}
+
+module.exports = { provider, getSigner, getSignerByAddress };

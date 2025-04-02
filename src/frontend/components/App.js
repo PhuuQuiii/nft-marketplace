@@ -60,20 +60,28 @@ function App() {
   }, [web3Handler]); // Thêm web3Handler vào mảng phụ thuộc
 
   const loadContracts = async (signer) => {
-    // Tạo hợp đồng Marketplace bằng ethers.Contract()
-    const marketplace = new ethers.Contract(
-      MarketplaceAddress.address,
-      MarketplaceAbi.abi,
-      signer
-    );
-    setMarketplace(marketplace);
-    // Tạo hợp đồng NFT bằng ethers.Contract()
-    const nft = new ethers.Contract(NFTAddress.address, NFTAbi.abi, signer);
-    setNFT(nft);
-
-    setLoading(false); // tắt spinner loading
+    try {
+      const marketplaceContract = new ethers.Contract(
+        MarketplaceAddress.address,
+        MarketplaceAbi.abi,
+        signer
+      );
+      const nftContract = new ethers.Contract(
+        NFTAddress.address,
+        NFTAbi.abi,
+        signer
+      );
+  
+      setMarketplace(marketplaceContract);
+      setNFT(nftContract);
+  
+      setLoading(false);
+    } catch (error) {
+      console.error("Error loading contracts: ", error);
+      setLoading(false); // Disable loading spinner if contracts fail to load
+    }
   };
-
+  
   return (
     <BrowserRouter >
       <div style={{fontFamily: 'DePixel, sans-serif'}} className="App">
@@ -101,7 +109,7 @@ function App() {
               />
               <Route
                 path="/create"
-                element={<Create marketplace={marketplace} nft={nft} />}
+                element={<Create walletAddress={account} marketplace={marketplace} nft={nft} />}
               />
               <Route
                 path="/my-listed-items"

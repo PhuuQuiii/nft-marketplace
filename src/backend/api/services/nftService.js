@@ -1,7 +1,7 @@
 const { ethers } = require("ethers");
 const fs = require("fs");
 const path = require("path");
-const { provider, getSigner } = require("../utils/web3Provider");
+const { provider, getSigner, getSignerByAddress } = require("../utils/web3Provider");
 const config = require("../utils/config");
 const { create: ipfsHttpClient } = require("ipfs-http-client"); // Import IPFS client
 require("dotenv").config(); // Load biến môi trường từ .env
@@ -50,8 +50,8 @@ const ipfs = ipfsHttpClient({
  * Mint một NFT mới
  * @param {string} tokenURI - URI metadata trên IPFS
  */
-const mintNFT = async (tokenURI) => {
-  const signer = await getSigner();
+const mintNFT = async (tokenURI, wallet) => {
+  const signer = await getSignerByAddress(wallet);
   const contractWithSigner = nftContract.connect(signer);
   const tx = await contractWithSigner.mint(tokenURI);
   await tx.wait();
@@ -62,8 +62,8 @@ const mintNFT = async (tokenURI) => {
  * update tokenURI
  * @param {number} tokenId - ID của NFT
  */
-const updateTokenURI = async (tokenId, newTokenURI) => {
-  const signer = await getSigner();
+const updateTokenURI = async (tokenId, newTokenURI, wallet) => {
+  const signer = await getSignerByAddress(wallet);
   const contractWithSigner = nftContract.connect(signer);
   const tx = await contractWithSigner.updateTokenURI(tokenId, newTokenURI);
   await tx.wait();
@@ -74,8 +74,8 @@ const updateTokenURI = async (tokenId, newTokenURI) => {
  * Approve NFT cho marketplace
  * @param {number} tokenId - ID của NFT
  */
-const approveNFT = async (tokenId) => {
-  const signer = await getSigner();
+const approveNFT = async (tokenId, wallet) => {
+  const signer = await getSignerByAddress(wallet);
   const contractWithSigner = nftContract.connect(signer);
   const tx = await contractWithSigner.approve(MARKETPLACE_ADDRESS, tokenId);
   await tx.wait();
@@ -87,8 +87,8 @@ const approveNFT = async (tokenId) => {
  * @param {number} tokenId - ID của NFT
  * @param {string} price - Giá niêm yết
  */
-const listNFT = async (tokenId, price) => {
-  const signer = await getSigner();
+const listNFT = async (tokenId, price, wallet) => {
+  const signer = await getSignerByAddress(wallet);
   const contractWithSigner = marketplaceContract.connect(signer);
   const tx = await contractWithSigner.makeItem(NFT_ADDRESS, tokenId, price);
   await tx.wait();

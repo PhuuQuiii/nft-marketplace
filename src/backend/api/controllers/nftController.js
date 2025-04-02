@@ -50,7 +50,7 @@ exports.createNFT = async (req, res) => {
     const uri = `http://localhost:8080/ipfs/${ipfsHash}`;
 
     // Mint NFT
-    const mintTransaction = await nftService.mintNFT(uri);
+    const mintTransaction = await nftService.mintNFT(uri, req.body.wallet);
     const mintReceipt = await mintTransaction.wait();
 
     // Kiểm tra sự kiện và lấy tokenId
@@ -116,7 +116,7 @@ exports.updateNFT = async (req, res) => {
     const uri = `http://localhost:8080/ipfs/${ipfsHash}`;
 
     // Update NFT
-    const updateTransaction = await nftService.updateTokenURI(tokenId, uri);
+    const updateTransaction = await nftService.updateTokenURI(tokenId, uri, req.body.wallet);
     await updateTransaction.wait();
 
     res.json({ message: "NFT updated successfully" });

@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Row, Form, Button, Toast, ToastContainer } from "react-bootstrap";
 import axios from "axios"; 
+import { ethers } from "ethers";
 
-const Create = () => {
+const Create = ({}) => {
   const [type, setType] = useState("Quan");
   const [image, setImage] = useState("");
   const [name, setName] = useState("");
@@ -29,7 +30,10 @@ const Create = () => {
   const createNFT = async () => {
     if (!type || !image || !name || !attributes) return;
     try {
-      const metadata = { type, image, name, attributes };
+      const account = await window.ethereum.request({ method: "eth_requestAccounts" });
+      const wallet = account[0];
+      console.log(wallet);
+      const metadata = { type, image, name, attributes, wallet};
       const result = await axios.post("http://localhost:4000/nft/createNFT", metadata);
       setShowSuccessToast(true);
       console.log("NFT created and listed!", result.data);

@@ -1,3 +1,9 @@
+h1 {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  width: 100%;
+  text-align: center;
+}
 .App {
   text-align: center;
   background-color: #222044;
@@ -73,8 +79,7 @@
   position: relative;
   box-sizing: border-box;
   clip-path: polygon(0 16px, 16px 16px, 16px 0, calc(100% - 16px) 0, calc(100% - 16px) 16px, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) calc(100% - 16px), calc(100% - 16px) 100%, 16px 100%, 16px calc(100% - 16px), 0 calc(100% - 16px));
-  box-shadow: inset -8px -8px 0px rgba(0, 0, 0, 0.2);
-}
+  box-shadow: inset -8px -8px 0px rgba(0, 0, 0, 0.2);}
 .pixel-box::before{
   content: "";
   position: absolute;
@@ -136,11 +141,13 @@
   gap: 10px 20px; /* Khoảng cách giữa hàng và cột */
   font-size: 28px;  
 }
+.attribute-value {
+  word-break: break-word;
+}
 
 .attributes-grid li {
   display: flex;
   justify-content: space-between; /* Căn đều giữa key và value */
-  white-space: nowrap; /* Tránh xuống dòng */
 }
 
 
