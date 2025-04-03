@@ -156,3 +156,30 @@ exports.getOwnedNFTs = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch owned NFTs" });
   }
 };
+
+exports.updateNFTType = async (req, res) => {
+  try {
+    const { tokenId, wallet } = req.body;
+    if (!tokenId || !wallet) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Metadata mới với type được đặt thành null
+    const metadata = {
+      type: null,
+    };
+
+    // Upload metadata mới lên IPFS
+    const ipfsHash = await nftService.uploadMetadataToIPFS(metadata);
+    const uri = `http://localhost:8080/ipfs/${ipfsHash}`;
+
+    // Update NFT với metadata mới
+    const updateTransaction = await nftService.updateTokenURI(tokenId, uri, wallet);
+    await updateTransaction.wait();
+
+    res.json({ message: "NFT type updated to null successfully" });
+  } catch (error) {
+    console.error("Error updating NFT type:", error);
+    res.status(500).json({ error: "Failed to update NFT type" });
+  }
+};

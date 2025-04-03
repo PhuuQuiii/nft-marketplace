@@ -56,30 +56,46 @@ const Profile = ({ walletAddress, marketplace, nft }) => {
         }
 
         // Lấy metadata từ IPFS cho từng NFT
-        const nftData = await Promise.all(
-          tokenIds.map(async (tokenId) => {
+      const nftData = await Promise.all(
+        tokenIds.map(async (tokenId) => {
+          try {
             const tokenUri = await contract.tokenURI(tokenId);
             console.log("tokenUri", tokenUri);
             const ipfsUrl = tokenUri.replace("ipfs://", ipfsGateway); // Chuyển IPFS URI thành HTTP URL
             console.log("ipfsUrl", ipfsUrl);
+
             // Gọi API để lấy metadata JSON từ IPFS
             const metadataRes = await fetch(ipfsUrl);
             const metadata = await metadataRes.json();
 
+            // Kiểm tra nếu metadata.image hoặc metadata.type là null
+          if (!metadata.image || metadata.type === null) {
+            console.warn(`NFT with tokenId ${tokenId} has invalid metadata`);
+            return null; // Bỏ qua NFT này
+          }
+
             // Chuyển đổi đường dẫn ảnh IPFS thành HTTP URL
             const imageUrl = metadata.image.replace("ipfs://", ipfsGateway);
 
-            console.log(metadata);
+            // console.log(metadata);
             return {
               id: tokenId.toString(),
               image: imageUrl,
               name: metadata.name || `NFT #${tokenId}`,
               attributes: metadata.attributes || [],
+              type: metadata.type || null, // Lấy giá trị type từ metadata
             };
-          })
-        );
+          } catch (err) {
+            console.error(`Error fetching metadata for tokenId ${tokenId}:`, err);
+            return null; // Bỏ qua NFT nếu có lỗi
+          }
+        })
+      );
 
-        setNfts(nftData);
+          // Lọc các NFT hợp lệ (loại bỏ null)
+      const filteredNFTs = nftData.filter((nft) => nft !== null);
+
+      setNfts(filteredNFTs);
       } catch (err) {
         setError("Failed to fetch NFTs");
         console.error(err);

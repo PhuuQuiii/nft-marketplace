@@ -3,6 +3,7 @@ const {
   createNFT,
   updateNFT,
   getOwnedNFTs,
+  updateNFTType,
 } = require("../controllers/nftController");
 
 const router = express.Router();
@@ -13,5 +14,7 @@ router.post("/updateNFT", updateNFT);
 
 // Route để lấy danh sách NFT ID của người dùng
 router.get("/ownedNFTs/:owner", getOwnedNFTs);
+
+router.post("/updateNFTType", updateNFTType);
 
 module.exports = router;
